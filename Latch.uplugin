@@ -1,0 +1,28 @@
+{
+  "FileVersion": 3,
+  "Version": 13,
+  "VersionName": "1.0.0",
+  "FriendlyName": "Latch",
+  "Description": "Control and preserve World Outliner hierarchy expansion with persistent latches, Mixed View, and Keep Visible pins.",
+  "Category": "Editor",
+  "CreatedBy": "Mippithedork",
+  "CreatedByURL": "https://github.com/mippi-the-dork",
+  "DocsURL": "https://github.com/mippi-the-dork/Latch",
+  "MarketplaceURL": "",
+  "SupportURL": "https://github.com/mippi-the-dork/Latch/issues",
+  "CanContainContent": false,
+  "Installed": false,
+  "IsExperimentalVersion": false,
+  "IsBetaVersion": false,
+  "Modules": [
+    {
+      "Name": "Latch",
+      "Type": "Editor",
+      "LoadingPhase": "PostEngineInit",
+      "PlatformAllowList": [
+        "Win64"
+      ]
+    }
+  ],
+  "EngineVersion": "5.8.0"
+}
