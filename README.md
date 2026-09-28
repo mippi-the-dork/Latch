@@ -6,10 +6,10 @@ Latch adds expansion latching, selective hierarchy exposure, and Keep Visible pi
 
 Keep important branches open or closed, expose only the descendants you need, and preserve your hierarchy view without changing Actors, folders, attachments, visibility, transforms, ordering, or gameplay state.
 
-![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
-![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
-![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue)
+![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)  
+![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)  
+![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)  
+![Version](https://img.shields.io/badge/Version-1.0.0-blue)  
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Latch hierarchy controls in the Unreal Engine World Outliner](Doc/Images/Latch-Hero.png)
