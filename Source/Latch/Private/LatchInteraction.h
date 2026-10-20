@@ -65,16 +65,22 @@ namespace Latch
         bool bActive = true;
         TArray<FRowRecord> Rows;
         TArray<FOutlinerRuntime> Outliners;
+        bool bPendingRefresh = false;
 
         static bool IsSupportedItem(const FSceneOutlinerTreeItemPtr& Item);
 
         void RegisterOutliner(ISceneOutliner& View);
         void RegisterRow(ISceneOutliner& View, FSceneOutlinerTreeItemRef Item, const STableRow<FSceneOutlinerTreeItemPtr>& Row);
+        // Paint-time tint lookup: constant-time cached state, no hierarchy traversal.
+        FSlateColor GetArrowTint(const TSharedPtr<ISceneOutliner>& Outliner,
+            const FSceneOutlinerTreeItemPtr& Item,
+            const TSharedPtr<SButton>& Button) const;
         void Tick(double CurrentTime);
+        void Invalidate() { bPendingRefresh = true; }
         void Stop();
 
         TSharedPtr<ISceneOutliner> FindOutlinerForPath(const FWidgetPath& Path) const;
-        FSceneOutlinerTreeItemPtr FindItemForPath(const FWidgetPath& Path, TSharedPtr<ISceneOutliner>& Outliner) const;
+        FSceneOutlinerTreeItemPtr FindItemForPath(const FWidgetPath& Path, TSharedPtr<ISceneOutliner>& Outliner);
         bool PathContainsExpander(const FWidgetPath& Path) const;
 
         // Context menus must never retain row/tree-item objects across Slate menu

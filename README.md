@@ -9,7 +9,7 @@ Keep important branches open or closed, expose only the descendants you need, an
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue)
+![Version](https://img.shields.io/badge/Version-1.0.9-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Latch hierarchy controls in the Unreal Engine World Outliner](Doc/Images/Latch-Hero.png)
@@ -491,7 +491,7 @@ Download the latest package matching your Unreal Engine version and platform.
 For example:
 
 ```text
-Latch-v1.0.0-UE5.8.2-Win64.zip
+Latch-v1.0.9-UE5.8.x-Win64.zip
 ```
 
 ### 2. Close Unreal Editor
@@ -634,7 +634,7 @@ The current Latch release targets:
 
 | | |
 | --- | --- |
-| **Latch Version** | 1.0.0 |
+| **Latch Version** | 1.0.9 |
 | **Unreal Engine** | 5.8.0 - 5.8.3 |
 | **Platform** | Windows 64-bit |
 | **Plugin Type** | Editor |
@@ -840,7 +840,7 @@ Latch is intended to remain a focused World Outliner hierarchy utility, so addit
 
 Latch is distributed under the **MIT License**.
 
-See [`LICENSE`](LICENSE) for details.
+See the license selected for the GitHub repository for details.
 
 ---
 

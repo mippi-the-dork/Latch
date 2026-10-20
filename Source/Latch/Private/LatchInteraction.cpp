@@ -29,9 +29,21 @@ namespace Latch
 {
     namespace
     {
-        // Run every Slate frame. Mixed presentation is row-lifecycle-sensitive and
-        // a delayed correction is visible as a flash when the user scrolls/rebuilds.
+        // Expensive hierarchy/row reconciliation is event-driven. Keep a slow
+        // safety pass for native and third-party Outliner changes that have no
+        // reliable shared invalidation event (Index, Chroma, Stem, Focus, Origin).
+        // A zero deadline requests reconciliation on the next Slate tick.
         double NextRefreshTime = 0.0;
+        constexpr double FallbackRefreshSeconds = 0.50;
+        // Native STreeView builds descendant rows lazily after an expansion change.
+        // Permit a few consecutive reconciliation passes while those rows settle,
+        // rather than postponing nested Mixed-path processing for half a second.
+        int32 HierarchySettleFrames = 0;
+        constexpr int32 MaxHierarchySettleFrames = 3;
+        void ScheduleHierarchySettle()
+        {
+            HierarchySettleFrames = FMath::Max(HierarchySettleFrames, MaxHierarchySettleFrames);
+        }
 
         ULatchSubsystem* State()
         {
@@ -223,6 +235,7 @@ namespace Latch
             if (Tree.IsItemExpanded(Item) != bPhysicalExpanded)
             {
                 Tree.SetItemExpansion(Item, bPhysicalExpanded);
+                ScheduleHierarchySettle();
             }
 
             // STreeView's OnExpansionChanged callback writes back into the item and,
@@ -234,20 +247,6 @@ namespace Latch
                 Item->Flags.bIsExpanded = bLogicalExpanded;
                 Item->OnExpansionChanged();
             }
-        }
-
-        const FSlateBrush* ArrowBrush(bool bExpanded, bool bHovered)
-        {
-            if (bExpanded)
-            {
-                return FCoreStyle::Get().GetBrush(bHovered
-                    ? FName(TEXT("TreeArrow_Expanded_Hovered"))
-                    : FName(TEXT("TreeArrow_Expanded")));
-            }
-
-            return FCoreStyle::Get().GetBrush(bHovered
-                ? FName(TEXT("TreeArrow_Collapsed_Hovered"))
-                : FName(TEXT("TreeArrow_Collapsed")));
         }
 
         FText TooltipFor(bool bLatched, bool bMixed, bool bLogicalExpanded, bool bSuspendedOrSearching)
@@ -369,6 +368,8 @@ namespace Latch
         FOutlinerRuntime Runtime;
         Runtime.Outliner = StaticCastSharedRef<ISceneOutliner>(View.AsShared());
         Outliners.Add(MoveTemp(Runtime));
+        NextRefreshTime = 0.0;
+        ScheduleHierarchySettle();
     }
 
     void FRegistry::RegisterRow(ISceneOutliner& View, FSceneOutlinerTreeItemRef Item, const STableRow<FSceneOutlinerTreeItemPtr>& Row)
@@ -390,6 +391,9 @@ namespace Latch
                 }
                 Existing.Item = Item;
                 Existing.Outliner = StaticCastSharedRef<ISceneOutliner>(View.AsShared());
+                // Row reuse and widget replacement are presentation invalidations.
+                NextRefreshTime = 0.0;
+                ScheduleHierarchySettle();
                 return;
             }
         }
@@ -399,6 +403,8 @@ namespace Latch
         Record.Item = Item;
         Record.Row = RowRef;
         Rows.Add(MoveTemp(Record));
+        NextRefreshTime = 0.0;
+        ScheduleHierarchySettle();
     }
 
     void FRegistry::RestoreRecord(FRowRecord& Record, bool bClearTooltip)
@@ -419,7 +425,6 @@ namespace Latch
         if (Arrow && Image)
         {
             const bool bExpanded = Record.Row.IsValid() ? Record.Row.Pin()->IsItemExpanded() : false;
-            Image->SetImage(ArrowBrush(bExpanded, Arrow->IsHovered()));
             Image->SetColorAndOpacity(TAttribute<FSlateColor>(FSlateColor::UseSubduedForeground()));
             if (bClearTooltip)
             {
@@ -436,6 +441,47 @@ namespace Latch
         Record.Arrow.Reset();
         Record.ArrowImage.Reset();
         Record.ArrowButton.Reset();
+    }
+
+    FSlateColor FRegistry::GetArrowTint(
+        const TSharedPtr<ISceneOutliner>& Outliner,
+        const FSceneOutlinerTreeItemPtr& Item,
+        const TSharedPtr<SButton>& Button) const
+    {
+        if (!bActive || !Outliner || !Item)
+        {
+            return FSlateColor::UseSubduedForeground();
+        }
+
+        const ULatchSubsystem* Subsystem = State();
+        if (!Subsystem || Subsystem->IsSuspended() || IsSearchActive(*Outliner))
+        {
+            return FSlateColor::UseSubduedForeground();
+        }
+
+        const ULatchSettings* Settings = GetDefault<ULatchSettings>();
+        if (!Settings)
+        {
+            return FSlateColor::UseSubduedForeground();
+        }
+        if (Subsystem->GetExpansionState(Item) != ELatchExpansionState::Unlatched)
+        {
+            FLinearColor Tint = Settings->ExpansionLatchColor;
+            Tint.A = 1.0f;
+            return FSlateColor(Tint);
+        }
+        for (const FOutlinerRuntime& Runtime : Outliners)
+        {
+            if (Runtime.Outliner.Pin() == Outliner && Runtime.MixedItems.Contains(Item->GetID()))
+            {
+                FLinearColor Tint = Settings->MixedStateColor;
+                Tint.A = 1.0f;
+                return FSlateColor(Tint);
+            }
+        }
+        return (Button && Button->IsHovered())
+            ? FSlateColor(FLinearColor::White)
+            : FSlateColor::UseSubduedForeground();
     }
 
     void FRegistry::RefreshRows()
@@ -464,30 +510,60 @@ namespace Latch
                 continue;
             }
 
-            // Reacquire from the live row every frame. Rename, refresh, scrolling and
-            // row pooling can replace the widget while old Slate objects remain alive.
+            // Re-discover just the expander widget subtree during reconciliation
+            // (normally twice a second), not on every Slate frame. An expander
+            // may survive while its button/image child is reconstructed. Find the
+            // actual glyph under the button rather than an arbitrary SImage in
+            // the expander subtree.
             const TSharedPtr<SExpanderArrow> CurrentArrow = FindExpander(Row.ToSharedRef());
-            if (Record.Arrow.Pin() != CurrentArrow)
+            const TSharedPtr<SButton> CurrentButton = CurrentArrow
+                ? FindWidgetOfType<SButton>(CurrentArrow.ToSharedRef(), FName(TEXT("SButton")))
+                : nullptr;
+            // Native UE 5.8 Scene Outliner uses SExpanderArrow > SButton >
+            // SImage. Retain a fallback for custom Outliner row layouts.
+            TSharedPtr<SImage> CurrentImage = CurrentButton
+                ? FindWidgetOfType<SImage>(CurrentButton.ToSharedRef(), FName(TEXT("SImage")))
+                : nullptr;
+            if (!CurrentImage && CurrentArrow)
             {
+                CurrentImage = FindWidgetOfType<SImage>(CurrentArrow.ToSharedRef(), FName(TEXT("SImage")));
+            }
+
+            if (Record.Arrow.Pin() != CurrentArrow
+                || Record.ArrowButton.Pin() != CurrentButton
+                || Record.ArrowImage.Pin() != CurrentImage)
+            {
+                // Restore the previous glyph before replacing its weak widget
+                // references so a recycled row never retains another item's tint.
                 RestoreRecord(Record);
                 Record.Item = CurrentItem;
                 Record.Arrow = CurrentArrow;
-                Record.ArrowImage = CurrentArrow
-                    ? FindWidgetOfType<SImage>(CurrentArrow.ToSharedRef(), FName(TEXT("SImage")))
-                    : nullptr;
-                Record.ArrowButton = CurrentArrow
-                    ? FindWidgetOfType<SButton>(CurrentArrow.ToSharedRef(), FName(TEXT("SButton")))
-                    : nullptr;
-            }
-            else if (CurrentArrow)
-            {
-                if (!Record.ArrowImage.IsValid())
+                Record.ArrowButton = CurrentButton;
+                Record.ArrowImage = CurrentImage;
+
+                // UE 5.8 builds the native arrow as SExpanderArrow > SButton >
+                // SImage. Keep its native GetExpanderImage() brush attribute
+                // intact. Bind only the tint, evaluated at paint time against
+                // Latch's cached Mixed state and persisted expansion latch.
+                // Weak captures avoid retaining recycled rows or Outliners.
+                if (CurrentImage)
                 {
-                    Record.ArrowImage = FindWidgetOfType<SImage>(CurrentArrow.ToSharedRef(), FName(TEXT("SImage")));
-                }
-                if (!Record.ArrowButton.IsValid())
-                {
-                    Record.ArrowButton = FindWidgetOfType<SButton>(CurrentArrow.ToSharedRef(), FName(TEXT("SButton")));
+                    TWeakPtr<FRegistry> WeakRegistry = AsShared();
+                    TWeakPtr<ISceneOutliner> WeakOutliner = Record.Outliner;
+                    TWeakPtr<ISceneOutlinerTreeItem> WeakItem = Record.Item;
+                    TWeakPtr<SButton> WeakButton = CurrentButton;
+                    CurrentImage->SetColorAndOpacity(TAttribute<FSlateColor>::CreateLambda(
+                        [WeakRegistry, WeakOutliner, WeakItem, WeakButton]() -> FSlateColor
+                        {
+                            const TSharedPtr<FRegistry> Registry = WeakRegistry.Pin();
+                            const TSharedPtr<ISceneOutliner> Outliner = WeakOutliner.Pin();
+                            const FSceneOutlinerTreeItemPtr Item = WeakItem.Pin();
+                            if (!Registry || !Registry->bActive || !Outliner || !Item)
+                            {
+                                return FSlateColor::UseSubduedForeground();
+                            }
+                            return Registry->GetArrowTint(Outliner, Item, WeakButton.Pin());
+                        }));
                 }
             }
         }
@@ -625,8 +701,7 @@ namespace Latch
                     continue;
                 }
                 const bool bExpanded = Tree.IsItemExpanded(Item);
-                Image->SetImage(ArrowBrush(bExpanded, Arrow->IsHovered()));
-                Image->SetColorAndOpacity(TAttribute<FSlateColor>(FSlateColor::UseSubduedForeground()));
+                Image->Invalidate(EInvalidateWidgetReason::Paint);
                 const int32 TipKind = TooltipKindFor(false, false, bExpanded, true);
                 if (Record.LastArrowTooltipKind != TipKind)
                 {
@@ -977,16 +1052,15 @@ namespace Latch
             }
         }
 
-        // The SImage inside SExpanderArrow uses UseSubduedForeground by default,
-        // which mutes semantic colors. Set the glyph itself so Red/Yellow are true
-        // 100% colors. Brush orientation follows logical state, not physical Mixed.
+        // The tint attribute installed at row discovery reads cached state at
+        // paint time. Only request a glyph repaint here: never take over the
+        // native expander brush or replace its color binding.
         for (FRowRecord& Record : Rows)
         {
             if (Record.Outliner.Pin() != Outliner)
             {
                 continue;
             }
-
             const FSceneOutlinerTreeItemPtr Item = Record.Item.Pin();
             const TSharedPtr<SExpanderArrow> Arrow = Record.Arrow.Pin();
             const TSharedPtr<SImage> Image = Record.ArrowImage.Pin();
@@ -996,33 +1070,10 @@ namespace Latch
                 continue;
             }
 
-            const ULatchSettings* Settings = GetDefault<ULatchSettings>();
             const bool bLogical = LogicalExpansion(Item);
             const bool bLatched = Subsystem->GetExpansionState(Item) != ELatchExpansionState::Unlatched;
             const bool bMixed = !bLatched && Runtime.MixedItems.Contains(Item->GetID());
-
-            Image->SetImage(ArrowBrush(bLogical, Arrow->IsHovered()));
-            if (bLatched)
-            {
-                FLinearColor Color = Settings->ExpansionLatchColor;
-                Color.A = 1.0f;
-                Image->SetColorAndOpacity(Color);
-            }
-            else if (bMixed)
-            {
-                FLinearColor Color = Settings->MixedStateColor;
-                Color.A = 1.0f;
-                Image->SetColorAndOpacity(Color);
-            }
-            else if (Arrow->IsHovered())
-            {
-                // Latch uses explicit pure White for the normal hover state.
-                Image->SetColorAndOpacity(FLinearColor::White);
-            }
-            else
-            {
-                Image->SetColorAndOpacity(TAttribute<FSlateColor>(FSlateColor::UseSubduedForeground()));
-            }
+            Image->Invalidate(EInvalidateWidgetReason::Paint);
 
             const int32 TipKind = TooltipKindFor(bLatched, bMixed, bLogical, false);
             if (Record.LastArrowTooltipKind != TipKind)
@@ -1058,11 +1109,19 @@ namespace Latch
 
     void FRegistry::Tick(double CurrentTime)
     {
-        if (!bActive || CurrentTime < NextRefreshTime)
+        if (!bActive || (CurrentTime < NextRefreshTime && !bPendingRefresh && HierarchySettleFrames == 0))
         {
             return;
         }
-        NextRefreshTime = CurrentTime;
+        bPendingRefresh = false;
+        if (HierarchySettleFrames > 0)
+        {
+            --HierarchySettleFrames;
+        }
+        // No full hierarchy walk on ordinary Slate frames. A Latch action or
+        // row lifecycle event sets the deadline to zero for the next frame.
+        // The fallback catches third-party changes and selection framing.
+        NextRefreshTime = CurrentTime + FallbackRefreshSeconds;
 
         RefreshRows();
         Outliners.RemoveAll([](const FOutlinerRuntime& Runtime)
@@ -1092,6 +1151,7 @@ namespace Latch
 
         Rows.Reset();
         Outliners.Reset();
+        HierarchySettleFrames = 0;
     }
 
     TSharedPtr<ISceneOutliner> FRegistry::FindOutlinerForPath(const FWidgetPath& Path) const
@@ -1114,7 +1174,7 @@ namespace Latch
         return nullptr;
     }
 
-    FSceneOutlinerTreeItemPtr FRegistry::FindItemForPath(const FWidgetPath& Path, TSharedPtr<ISceneOutliner>& Outliner) const
+    FSceneOutlinerTreeItemPtr FRegistry::FindItemForPath(const FWidgetPath& Path, TSharedPtr<ISceneOutliner>& Outliner)
     {
         Outliner = FindOutlinerForPath(Path);
         if (!Outliner)
@@ -1123,39 +1183,55 @@ namespace Latch
         }
 
         STreeView<FSceneOutlinerTreeItemPtr>& Tree = MutableTree(*Outliner);
+
+        // Resolve the native row on the live Slate hit-test path, not through
+        // Latch's observer-column cache. Rows for nested/recycled branches may
+        // be created after the last reconciliation or may not have reached the
+        // observer column when the first pointer event arrives.
+        for (int32 Index = Path.Widgets.Num() - 1; Index >= 0; --Index)
+        {
+            const TSharedRef<SWidget> Widget = Path.Widgets[Index].Widget;
+            if (Widget->GetType() != FName(TEXT("SSceneOutlinerTreeRow")))
+            {
+                continue;
+            }
+
+            const TSharedRef<STableRow<FSceneOutlinerTreeItemPtr>> Row =
+                StaticCastSharedRef<STableRow<FSceneOutlinerTreeItemPtr>>(Widget);
+            if (const FSceneOutlinerTreeItemPtr* Item = Tree.ItemFromWidget(&Row.Get()))
+            {
+                if (*Item)
+                {
+                    RegisterRow(*Outliner, (*Item).ToSharedRef(), *Row);
+                    return *Item;
+                }
+            }
+        }
+
+        // Compatibility fallback for custom Outliner row implementations.
         for (const FRowRecord& Record : Rows)
         {
             if (Record.Outliner.Pin() != Outliner)
             {
                 continue;
             }
-
             const TSharedPtr<STableRow<FSceneOutlinerTreeItemPtr>> Row = Record.Row.Pin();
             if (!Row)
             {
                 continue;
             }
-
-            bool bRowInPath = false;
-            for (int32 Index = 0; Index < Path.Widgets.Num(); ++Index)
+            for (int32 WidgetIndex = 0; WidgetIndex < Path.Widgets.Num(); ++WidgetIndex)
             {
-                if (Path.Widgets[Index].Widget == Row)
+                if (Path.Widgets[WidgetIndex].Widget == Row)
                 {
-                    bRowInPath = true;
+                    if (const FSceneOutlinerTreeItemPtr* Item = Tree.ItemFromWidget(Row.Get()))
+                    {
+                        return *Item;
+                    }
                     break;
                 }
             }
-            if (!bRowInPath)
-            {
-                continue;
-            }
-
-            if (const FSceneOutlinerTreeItemPtr* ItemPtr = Tree.ItemFromWidget(Row.Get()))
-            {
-                return *ItemPtr;
-            }
         }
-
         return nullptr;
     }
 

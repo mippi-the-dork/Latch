@@ -27,14 +27,37 @@ namespace
 
 class FLatchModule final : public IModuleInterface
 {
+    void HandleSelectionChanged(UObject* SelectionObject)
+    {
+        // Viewport and Outliner selection notifications are broadcast after the
+        // selection set changes. Only invalidate here: the normal Slate tick
+        // runs the refresh once, after Unreal finishes its selection handling.
+        if (Registry && (!SelectionObject || (GEditor && SelectionObject == GEditor->GetSelectedActors())))
+        {
+            Registry->Invalidate();
+        }
+    }
+
     void HandleLevelActorDeleted(AActor* Actor)
     {
+        if (Registry)
+        {
+            Registry->Invalidate();
+        }
         if (GEditor)
         {
             if (ULatchSubsystem* Subsystem = GEditor->GetEditorSubsystem<ULatchSubsystem>())
             {
                 Subsystem->ClearActorState(Actor);
             }
+        }
+    }
+
+    void HandleLevelActorAdded(AActor* Actor)
+    {
+        if (Registry)
+        {
+            Registry->Invalidate();
         }
     }
 
@@ -156,9 +179,13 @@ public:
         Registry = MakeShared<Latch::FRegistry>();
         InputProcessor = MakeShared<Latch::FInputProcessor>(Registry.ToSharedRef());
 
+        SelectionChangedHandle = USelection::SelectionChangedEvent.AddRaw(
+            this, &FLatchModule::HandleSelectionChanged);
+
         if (GEngine)
         {
             LevelActorDeletedHandle = GEngine->OnLevelActorDeleted().AddRaw(this, &FLatchModule::HandleLevelActorDeleted);
+            LevelActorAddedHandle = GEngine->OnLevelActorAdded().AddRaw(this, &FLatchModule::HandleLevelActorAdded);
         }
 
         if (FSlateApplication::IsInitialized())
@@ -299,9 +326,19 @@ public:
         UToolMenus::UnRegisterStartupCallback(this);
         UToolMenus::UnregisterOwner(this);
 
+        if (SelectionChangedHandle.IsValid())
+        {
+            USelection::SelectionChangedEvent.Remove(SelectionChangedHandle);
+            SelectionChangedHandle.Reset();
+        }
+
         if (GEngine && LevelActorDeletedHandle.IsValid())
         {
             GEngine->OnLevelActorDeleted().Remove(LevelActorDeletedHandle);
+        }
+        if (GEngine && LevelActorAddedHandle.IsValid())
+        {
+            GEngine->OnLevelActorAdded().Remove(LevelActorAddedHandle);
         }
 
         if (FSlateApplication::IsInitialized() && InputProcessor)
@@ -331,7 +368,9 @@ public:
 
 private:
     FDelegateHandle ColumnHandle;
+    FDelegateHandle SelectionChangedHandle;
     FDelegateHandle LevelActorDeletedHandle;
+    FDelegateHandle LevelActorAddedHandle;
     TSharedPtr<Latch::FRegistry> Registry;
     TSharedPtr<Latch::FInputProcessor> InputProcessor;
 };
