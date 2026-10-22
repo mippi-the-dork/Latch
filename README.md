@@ -9,7 +9,7 @@ Keep important branches open or closed, expose only the descendants you need, an
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.0.9-blue)
+![Version](https://img.shields.io/badge/Version-1.0.17-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Latch hierarchy controls in the Unreal Engine World Outliner](Doc/Images/Latch-Hero.png)
@@ -491,7 +491,7 @@ Download the latest package matching your Unreal Engine version and platform.
 For example:
 
 ```text
-Latch-v1.0.9-UE5.8.x-Win64.zip
+Latch-v1.0.10-UE5.8.x-Win64.zip
 ```
 
 ### 2. Close Unreal Editor
@@ -634,7 +634,7 @@ The current Latch release targets:
 
 | | |
 | --- | --- |
-| **Latch Version** | 1.0.9 |
+| **Latch Version** | 1.0.17 |
 | **Unreal Engine** | 5.8.0 - 5.8.3 |
 | **Platform** | Windows 64-bit |
 | **Plugin Type** | Editor |
@@ -707,7 +707,7 @@ A root-level item can remain marked Keep Visible, but there is no ancestor for L
 
 An item with no real children cannot maintain an Expansion Latch.
 
-If a latched parent loses its final child, the Expansion Latch is automatically cleared.
+If a latched parent has no children, there is no expansion triangle to control. Its saved latch remains available if children return.
 
 ### Search Temporarily Takes Presentation Authority
 
@@ -781,7 +781,7 @@ If it is disabled, Latch state is intentionally session-only.
 
 Check whether the item lost its final real child.
 
-Latch automatically clears Expansion Latches when an item stops being a parent.
+A parent with no children has no expansion triangle. Its existing latch state can be removed with Clear Expansion Latches.
 
 ---
 

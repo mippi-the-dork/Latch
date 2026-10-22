@@ -389,11 +389,19 @@ namespace Latch
                 {
                     RestoreRecord(Existing);
                 }
+                // Do not restart the multi-frame settle window just because a
+                // column asks to register an already-known row again. Repeated
+                // registrations can otherwise perpetuate tree/layout work while
+                // Unreal is scrolling a newly selected actor into view.
+                const bool bAssociationChanged = Existing.Item.Pin() != Item ||
+                    Existing.Outliner.Pin().Get() != &View;
                 Existing.Item = Item;
                 Existing.Outliner = StaticCastSharedRef<ISceneOutliner>(View.AsShared());
-                // Row reuse and widget replacement are presentation invalidations.
-                NextRefreshTime = 0.0;
-                ScheduleHierarchySettle();
+                if (bAssociationChanged)
+                {
+                    NextRefreshTime = 0.0;
+                    ScheduleHierarchySettle();
+                }
                 return;
             }
         }
@@ -403,8 +411,9 @@ namespace Latch
         Record.Item = Item;
         Record.Row = RowRef;
         Rows.Add(MoveTemp(Record));
+        // One reconciliation picks up its Mixed state and arrow tint. Multi-frame
+        // settling is reserved for a real SetItemExpansion transition.
         NextRefreshTime = 0.0;
-        ScheduleHierarchySettle();
     }
 
     void FRegistry::RestoreRecord(FRowRecord& Record, bool bClearTooltip)
@@ -784,21 +793,20 @@ namespace Latch
             Runtime.bSearchWasActive = false;
         }
 
+        // Keep the previous Mixed state for targeted arrow repainting. Row tint
+        // reads the current state at paint time, so unchanged ancestors never
+        // need another explicit invalidation.
+        const TSet<FSceneOutlinerTreeItemID> PreviousMixedItems = Runtime.MixedItems;
         Runtime.RequiredTargets.Reset();
         Runtime.MixedItems.Reset();
         Runtime.MixedRoots.Reset();
         Runtime.AllowedItems.Reset();
 
-        // Expansion latches only have meaning while an item is actually a parent.
-        // Clearing only Expansion state leaves Keep Visible independent.
-        for (const FSceneOutlinerTreeItemPtr& Item : Items)
-        {
-            if (IsSupportedItem(Item) && !HasChildren(Item) &&
-                Subsystem->GetExpansionState(Item) != ELatchExpansionState::Unlatched)
-            {
-                Subsystem->ClearExpansionState(Item);
-            }
-        }
+        // Never delete persistent expansion latches just because an Outliner tree
+        // item temporarily reports no children. The Scene Outliner can rebuild
+        // nested folders and their child links independently from its visible rows.
+        // In particular, an interim empty child list is NOT proof that the folder
+        // permanently became childless. Explicit user actions still clear latches.
 
         // Merge Outliner selection with the editor's Actor selection. The latter is
         // available immediately for viewport picks, even while Scene Outliner is
@@ -953,40 +961,12 @@ namespace Latch
             }
         }
 
-        // Restore anything that was physically open only for a Mixed path that no
-        // longer exists. Its logical item flag is the authoritative target state.
-        TSet<FSceneOutlinerTreeItemID> NoLongerForced;
-        for (const TPair<FSceneOutlinerTreeItemID, bool>& Pair : Runtime.ForcedPhysicalExpansion)
-        {
-            if (!ForceExpanded.Contains(Pair.Key))
-            {
-                NoLongerForced.Add(Pair.Key);
-            }
-        }
-        for (const FSceneOutlinerTreeItemPtr& Item : Items)
-        {
-            if (!Item || !NoLongerForced.Contains(Item->GetID()))
-            {
-                continue;
-            }
-
-            bool bLogical = Runtime.ForcedPhysicalExpansion.FindRef(Item->GetID());
-            const ELatchExpansionState LatchState = Subsystem->GetExpansionState(Item);
-            if (LatchState == ELatchExpansionState::LatchedOpen)
-            {
-                bLogical = true;
-            }
-            else if (LatchState == ELatchExpansionState::LatchedClosed)
-            {
-                bLogical = false;
-            }
-
-            SetPhysicalExpansionPreservingLogical(Tree, Item, bLogical, bLogical);
-            Runtime.ForcedPhysicalExpansion.Remove(Item->GetID());
-        }
-
-        // Apply explicit latch authority and the physical expansion needed to make
-        // Mixed paths constructible. Physical Mixed expansion never owns the flag.
+        // Apply the complete desired expansion state in one traversal. In
+        // particular, do not first collapse an old Mixed bridge and then reopen
+        // it when the selection switches to another descendant of that branch.
+        // Root-first traversal makes each ancestor available before its children.
+        const TMap<FSceneOutlinerTreeItemID, bool> PreviouslyForced = Runtime.ForcedPhysicalExpansion;
+        bool bNativeExpansionChanged = false;
         for (const FSceneOutlinerTreeItemPtr& Item : Items)
         {
             if (!IsSupportedItem(Item))
@@ -996,9 +976,23 @@ namespace Latch
 
             const FSceneOutlinerTreeItemID ID = Item->GetID();
             const ELatchExpansionState LatchState = Subsystem->GetExpansionState(Item);
-            const bool bLogical = LogicalExpansion(Item);
+            const bool bShouldForce = ForceExpanded.Contains(ID);
+            const bool* PreviousLogical = PreviouslyForced.Find(ID);
 
-            if (ForceExpanded.Contains(ID))
+            // A temporary physical bridge must never become the persisted
+            // expansion preference, even after Unreal rebuilds the row.
+            bool bLogical = PreviousLogical ? *PreviousLogical : LogicalExpansion(Item);
+            if (LatchState == ELatchExpansionState::LatchedOpen)
+            {
+                bLogical = true;
+            }
+            else if (LatchState == ELatchExpansionState::LatchedClosed)
+            {
+                bLogical = false;
+            }
+
+            const bool bWasPhysicallyExpanded = Tree.IsItemExpanded(Item);
+            if (bShouldForce)
             {
                 if (!Runtime.ForcedPhysicalExpansion.Contains(ID))
                 {
@@ -1006,20 +1000,27 @@ namespace Latch
                 }
                 SetPhysicalExpansionPreservingLogical(Tree, Item, true, bLogical);
             }
-            else if (LatchState == ELatchExpansionState::LatchedOpen)
+            else
             {
-                SetLogicalExpansion(Item, true);
-                SetPhysicalExpansionPreservingLogical(Tree, Item, true, true);
+                // An ordinary unlatched branch remains under Unreal's native
+                // control. Only restore a previous Mixed bridge or enforce an
+                // explicit latch; do not churn every other row's expansion.
+                if (PreviousLogical || LatchState != ELatchExpansionState::Unlatched)
+                {
+                    SetLogicalExpansion(Item, bLogical);
+                    SetPhysicalExpansionPreservingLogical(Tree, Item, bLogical, bLogical);
+                }
+                Runtime.ForcedPhysicalExpansion.Remove(ID);
             }
-            else if (LatchState == ELatchExpansionState::LatchedClosed)
-            {
-                SetLogicalExpansion(Item, false);
-                SetPhysicalExpansionPreservingLogical(Tree, Item, false, false);
-            }
+            // SetItemExpansion already requests STreeView's next linearization.
+            // Avoid enqueuing a second refresh for the same presentation change.
+            bNativeExpansionChanged |= Tree.IsItemExpanded(Item) != bWasPhysicallyExpanded;
         }
 
         // Suppress only real rows that lie inside a Mixed root but are not part of
-        // the allowed real hierarchy. Never reparent or manufacture tree items.
+        // the allowed real hierarchy. Track the transition, rather than forcing
+        // visibility writes and layout invalidations on every reconciliation.
+        bool bMixedRowVisibilityChanged = false;
         for (FRowRecord& Record : Rows)
         {
             if (Record.Outliner.Pin() != Outliner)
@@ -1043,13 +1044,27 @@ namespace Latch
                 Record.VisibilityBeforeLatch = Row->GetVisibility();
                 Row->SetVisibility(EVisibility::Collapsed);
                 Record.bHiddenByLatch = true;
+                bMixedRowVisibilityChanged = true;
             }
             else if (!bHide && Record.bHiddenByLatch)
             {
                 Row->SetVisibility(Record.VisibilityBeforeLatch.Get(EVisibility::Visible));
                 Record.VisibilityBeforeLatch.Reset();
                 Record.bHiddenByLatch = false;
+                bMixedRowVisibilityChanged = true;
             }
+        }
+
+        // A virtualized STreeView counts tree items, not rows hidden with Slate
+        // visibility. Never clamp scroll position using our separately calculated
+        // visible-row count during the same frame as expansion changes. That
+        // stale estimate can move the thumb beyond its eventual valid position
+        // and fight Unreal's own pending RequestScrollIntoView. Request one
+        // native layout refresh after the committed presentation changes and let
+        // STableViewBase normalize its own offset during regeneration.
+        if (bMixedRowVisibilityChanged && !bNativeExpansionChanged && !Tree.IsPendingRefresh())
+        {
+            Tree.RequestListRefresh();
         }
 
         // The tint attribute installed at row discovery reads cached state at
@@ -1073,11 +1088,11 @@ namespace Latch
             const bool bLogical = LogicalExpansion(Item);
             const bool bLatched = Subsystem->GetExpansionState(Item) != ELatchExpansionState::Unlatched;
             const bool bMixed = !bLatched && Runtime.MixedItems.Contains(Item->GetID());
-            Image->Invalidate(EInvalidateWidgetReason::Paint);
-
             const int32 TipKind = TooltipKindFor(bLatched, bMixed, bLogical, false);
-            if (Record.LastArrowTooltipKind != TipKind)
+            const bool bMixedChanged = PreviousMixedItems.Contains(Item->GetID()) != Runtime.MixedItems.Contains(Item->GetID());
+            if (Record.LastArrowTooltipKind != TipKind || bMixedChanged)
             {
+                Image->Invalidate(EInvalidateWidgetReason::Paint);
                 const FText Tip = TooltipFor(bLatched, bMixed, bLogical, false);
                 Arrow->SetToolTipText(Tip);
                 Image->SetToolTipText(Tip);
@@ -1319,10 +1334,40 @@ namespace Latch
         return Result;
     }
 
+    bool FRegistry::HasLiveChildren(ISceneOutliner& Outliner, const FSceneOutlinerTreeItemPtr& Item) const
+    {
+        if (!Item)
+        {
+            return false;
+        }
+
+        // Native row geometry is the same source Unreal uses to decide whether
+        // the expander triangle is visible. The item child list can temporarily be
+        // empty for nested folders while Outliner rows are reconstructed.
+        for (const FRowRecord& Record : Rows)
+        {
+            if (Record.Outliner.Pin().Get() != &Outliner)
+            {
+                continue;
+            }
+            const TSharedPtr<STableRow<FSceneOutlinerTreeItemPtr>> Row = Record.Row.Pin();
+            if (!Row)
+            {
+                continue;
+            }
+            const FSceneOutlinerTreeItemPtr* LiveItem = MutableTree(Outliner).ItemFromWidget(Row.Get());
+            if (LiveItem && *LiveItem && (*LiveItem)->GetID() == Item->GetID())
+            {
+                return Row->DoesItemHaveChildren() || HasChildren(Item);
+            }
+        }
+        return HasChildren(Item);
+    }
+
     void FRegistry::ToggleLatch(ISceneOutliner& Outliner, const FSceneOutlinerTreeItemPtr& Item)
     {
         ULatchSubsystem* Subsystem = State();
-        if (!Subsystem || !IsSupportedItem(Item) || !HasChildren(Item))
+        if (!Subsystem || !IsSupportedItem(Item) || !HasLiveChildren(Outliner, Item))
         {
             return;
         }
@@ -1336,7 +1381,7 @@ namespace Latch
         const FSceneOutlinerTreeItemPtr& ClickedItem)
     {
         ULatchSubsystem* Subsystem = State();
-        if (!Subsystem || !IsSupportedItem(ClickedItem) || !HasChildren(ClickedItem))
+        if (!Subsystem || !IsSupportedItem(ClickedItem) || !HasLiveChildren(Outliner, ClickedItem))
         {
             return;
         }
@@ -1589,7 +1634,7 @@ namespace Latch
     void FRegistry::HandleRecursiveExpanderClick(ISceneOutliner& Outliner, const FSceneOutlinerTreeItemPtr& Item)
     {
         ULatchSubsystem* Subsystem = State();
-        if (!Subsystem || !Item || !HasChildren(Item))
+        if (!Subsystem || !Item || !HasLiveChildren(Outliner, Item))
         {
             return;
         }

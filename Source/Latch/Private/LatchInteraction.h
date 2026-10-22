@@ -97,6 +97,7 @@ namespace Latch
             ISceneOutliner& Outliner,
             const FSceneOutlinerTreeItemPtr& ClickedItem) const;
 
+        bool HasLiveChildren(ISceneOutliner& Outliner, const FSceneOutlinerTreeItemPtr& Item) const;
         void ToggleLatch(ISceneOutliner& Outliner, const FSceneOutlinerTreeItemPtr& Item);
         void ToggleLatchForInteraction(ISceneOutliner& Outliner, const FSceneOutlinerTreeItemPtr& ClickedItem);
         void SetLatch(const FSceneOutlinerTreeItemPtr& Item, int32 StateValue);
