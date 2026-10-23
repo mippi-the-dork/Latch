@@ -126,6 +126,7 @@ namespace Latch
         void PopulateContextMenu(UToolMenu& Menu, const TSharedPtr<ISceneOutliner>& Outliner, const TArray<FSceneOutlinerTreeItemPtr>& Items);
 
     private:
+        void ApplyCachedRowVisibility(FRowRecord& Record);
         void RefreshRows();
         void UpdateOutliner(FOutlinerRuntime& Runtime);
         void RestoreRecord(FRowRecord& Record, bool bClearTooltip = false);

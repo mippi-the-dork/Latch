@@ -1,4 +1,4 @@
-# Latch
+﻿# Latch
 
 **Persistent hierarchy control for Unreal Engine's World Outliner.**
 
@@ -9,7 +9,7 @@ Keep important branches open or closed, expose only the descendants you need, an
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.0.17-blue)
+![Version](https://img.shields.io/badge/Version-1.0.21-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Latch hierarchy controls in the Unreal Engine World Outliner](Doc/Images/Latch-Hero.png)
@@ -634,7 +634,7 @@ The current Latch release targets:
 
 | | |
 | --- | --- |
-| **Latch Version** | 1.0.17 |
+| **Latch Version** | 1.0.18 |
 | **Unreal Engine** | 5.8.0 - 5.8.3 |
 | **Platform** | Windows 64-bit |
 | **Plugin Type** | Editor |

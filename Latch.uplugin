@@ -1,7 +1,7 @@
 {
     "FileVersion": 3,
-    "Version": 28,
-    "VersionName": "1.0.17",
+    "Version": 30,
+    "VersionName": "1.0.21",
     "FriendlyName": "Latch",
     "Description": "Control and preserve World Outliner hierarchy expansion with persistent latches, Mixed View, and Keep Visible pins.",
     "Category": "Editor",

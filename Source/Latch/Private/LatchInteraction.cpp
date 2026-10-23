@@ -399,6 +399,7 @@ namespace Latch
                 Existing.Outliner = StaticCastSharedRef<ISceneOutliner>(View.AsShared());
                 if (bAssociationChanged)
                 {
+                    ApplyCachedRowVisibility(Existing);
                     NextRefreshTime = 0.0;
                     ScheduleHierarchySettle();
                 }
@@ -411,9 +412,53 @@ namespace Latch
         Record.Item = Item;
         Record.Row = RowRef;
         Rows.Add(MoveTemp(Record));
+        // SListView measures the row immediately after generation. Apply the
+        // last committed Mixed visibility before its first layout prepass.
+        ApplyCachedRowVisibility(Rows.Last());
         // One reconciliation picks up its Mixed state and arrow tint. Multi-frame
         // settling is reserved for a real SetItemExpansion transition.
         NextRefreshTime = 0.0;
+    }
+
+    void FRegistry::ApplyCachedRowVisibility(FRowRecord& Record)
+    {
+        const TSharedPtr<ISceneOutliner> Outliner = Record.Outliner.Pin();
+        const FSceneOutlinerTreeItemPtr Item = Record.Item.Pin();
+        const TSharedPtr<STableRow<FSceneOutlinerTreeItemPtr>> Row = Record.Row.Pin();
+        if (!Outliner || !Item || !Row || !bActive)
+        {
+            return;
+        }
+
+        const ULatchSubsystem* Subsystem = State();
+        if (!Subsystem || Subsystem->IsSuspended() || IsSearchActive(*Outliner))
+        {
+            return;
+        }
+
+        for (const FOutlinerRuntime& Runtime : Outliners)
+        {
+            if (Runtime.Outliner.Pin() != Outliner)
+            {
+                continue;
+            }
+            const bool bInsideMixed = Runtime.MixedRoots.Contains(Item->GetID()) ||
+                HasAncestorID(Item, Runtime.MixedRoots);
+            const bool bHide = bInsideMixed && !Runtime.AllowedItems.Contains(Item->GetID());
+            if (bHide && !Record.bHiddenByLatch)
+            {
+                Record.VisibilityBeforeLatch = Row->GetVisibility();
+                Row->SetVisibility(EVisibility::Collapsed);
+                Record.bHiddenByLatch = true;
+            }
+            else if (!bHide && Record.bHiddenByLatch)
+            {
+                Row->SetVisibility(Record.VisibilityBeforeLatch.Get(EVisibility::Visible));
+                Record.VisibilityBeforeLatch.Reset();
+                Record.bHiddenByLatch = false;
+            }
+            return;
+        }
     }
 
     void FRegistry::RestoreRecord(FRowRecord& Record, bool bClearTooltip)
@@ -808,19 +853,23 @@ namespace Latch
         // In particular, an interim empty child list is NOT proof that the folder
         // permanently became childless. Explicit user actions still clear latches.
 
-        // Merge Outliner selection with the editor's Actor selection. The latter is
-        // available immediately for viewport picks, even while Scene Outliner is
-        // still synchronizing its own selection model.
+        // Actor selection is authoritative in the editor. Immediately after a
+        // viewport pick, STreeView may still report actors from its previous
+        // selection. Unioning both sets briefly exposes BOTH paths in Mixed View,
+        // followed by a second collapse when Scene Outliner catches up. Use the
+        // editor's live actor selection for actor rows, and preserve the tree's
+        // selection for non-actor items such as folders.
         TSet<FSceneOutlinerTreeItemID> SelectedIDs;
+        const bool bHasEditorActorSelection = GEditor && GEditor->GetSelectedActors();
         for (const FSceneOutlinerTreeItemPtr& SelectedItem : Tree.GetSelectedItems())
         {
-            if (SelectedItem)
+            if (SelectedItem && (!bHasEditorActorSelection || !SelectedItem->CastTo<FActorTreeItem>()))
             {
                 SelectedIDs.Add(SelectedItem->GetID());
             }
         }
 
-        if (GEditor && GEditor->GetSelectedActors())
+        if (bHasEditorActorSelection)
         {
             for (const FSceneOutlinerTreeItemPtr& Item : Items)
             {
@@ -966,7 +1015,6 @@ namespace Latch
         // it when the selection switches to another descendant of that branch.
         // Root-first traversal makes each ancestor available before its children.
         const TMap<FSceneOutlinerTreeItemID, bool> PreviouslyForced = Runtime.ForcedPhysicalExpansion;
-        bool bNativeExpansionChanged = false;
         for (const FSceneOutlinerTreeItemPtr& Item : Items)
         {
             if (!IsSupportedItem(Item))
@@ -991,7 +1039,6 @@ namespace Latch
                 bLogical = false;
             }
 
-            const bool bWasPhysicallyExpanded = Tree.IsItemExpanded(Item);
             if (bShouldForce)
             {
                 if (!Runtime.ForcedPhysicalExpansion.Contains(ID))
@@ -1012,15 +1059,16 @@ namespace Latch
                 }
                 Runtime.ForcedPhysicalExpansion.Remove(ID);
             }
-            // SetItemExpansion already requests STreeView's next linearization.
-            // Avoid enqueuing a second refresh for the same presentation change.
-            bNativeExpansionChanged |= Tree.IsItemExpanded(Item) != bWasPhysicallyExpanded;
         }
+
+        // A viewport selection can leave the native virtualized list scrolled to
+        // rows that are about to be collapsed by Mixed View. Track transitions so
+        // we repair only an invalid offset, not the user's normal scrolling.
+        bool bMixedRowVisibilityChanged = false;
 
         // Suppress only real rows that lie inside a Mixed root but are not part of
         // the allowed real hierarchy. Track the transition, rather than forcing
         // visibility writes and layout invalidations on every reconciliation.
-        bool bMixedRowVisibilityChanged = false;
         for (FRowRecord& Record : Rows)
         {
             if (Record.Outliner.Pin() != Outliner)
@@ -1055,14 +1103,12 @@ namespace Latch
             }
         }
 
-        // A virtualized STreeView counts tree items, not rows hidden with Slate
-        // visibility. Never clamp scroll position using our separately calculated
-        // visible-row count during the same frame as expansion changes. That
-        // stale estimate can move the thumb beyond its eventual valid position
-        // and fight Unreal's own pending RequestScrollIntoView. Request one
-        // native layout refresh after the committed presentation changes and let
-        // STableViewBase normalize its own offset during regeneration.
-        if (bMixedRowVisibilityChanged && !bNativeExpansionChanged && !Tree.IsPendingRefresh())
+        // Changed row visibility changes the measured height of already
+        // generated SListView widgets. A single native refresh remeasures the
+        // list with the correct initial visibility applied in RegisterRow.
+        // Without it the list may show a cut-off region until manual scrolling.
+        // Only enqueue this when the committed presentation actually changed.
+        if (bMixedRowVisibilityChanged)
         {
             Tree.RequestListRefresh();
         }
