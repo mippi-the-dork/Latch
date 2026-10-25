@@ -1,28 +1,28 @@
 {
-    "FileVersion": 3,
-    "Version": 30,
-    "VersionName": "1.0.21",
-    "FriendlyName": "Latch",
-    "Description": "Control and preserve World Outliner hierarchy expansion with persistent latches, Mixed View, and Keep Visible pins.",
-    "Category": "Editor",
-    "CreatedBy": "Mippithedork",
-    "CreatedByURL": "https://github.com/mippi-the-dork",
-    "DocsURL": "https://github.com/mippi-the-dork/Latch",
-    "MarketplaceURL": "",
-    "SupportURL": "https://github.com/mippi-the-dork/Latch/issues",
-    "CanContainContent": false,
-    "Installed": false,
-    "IsExperimentalVersion": false,
-    "IsBetaVersion": false,
-    "Modules": [
-        {
-            "Name": "Latch",
-            "Type": "Editor",
-            "LoadingPhase": "PostEngineInit",
-            "PlatformAllowList": [
-                "Win64"
-            ]
-        }
-    ],
-    "EngineVersion": "5.8.0"
+	"FileVersion": 3,
+	"Version": 43,
+	"VersionName": "2.0.3",
+	"FriendlyName": "Latch",
+	"Description": "Control and preserve World Outliner hierarchy expansion with persistent latches, Mixed View, and Keep Visible pins.",
+	"Category": "World Outliner",
+	"CreatedBy": "Mippithedork",
+	"CreatedByURL": "https://github.com/mippi-the-dork",
+	"DocsURL": "https://github.com/mippi-the-dork/Latch",
+	"MarketplaceURL": "https://www.fab.com/listings/280bc637-782a-45a3-a949-9423e745bf34",
+	"SupportURL": "https://github.com/mippi-the-dork/Latch/issues",
+	"CanContainContent": false,
+	"Installed": false,
+	"IsExperimentalVersion": false,
+	"IsBetaVersion": false,
+	"Modules": [
+		{
+			"Name": "Latch",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		}
+	],
+	"EngineVersion": "5.8.0"
 }

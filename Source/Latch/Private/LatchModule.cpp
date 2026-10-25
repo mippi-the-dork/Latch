@@ -1,4 +1,4 @@
-﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 
 #include "Modules/ModuleManager.h"
 
@@ -29,10 +29,11 @@ class FLatchModule final : public IModuleInterface
 {
     void HandleSelectionChanged(UObject* SelectionObject)
     {
-        // Viewport and Outliner selection notifications are broadcast after the
-        // selection set changes. Only invalidate here: the normal Slate tick
-        // runs the refresh once, after Unreal finishes its selection handling.
-        if (Registry && (!SelectionObject || (GEditor && SelectionObject == GEditor->GetSelectedActors())))
+        // The event payload is not guaranteed to equal the actor selection
+        // container for every viewport selection path. Any editor selection
+        // notification is cheap to enqueue; the registry coalesces them into
+        // one hierarchy update on the next Slate tick.
+        if (Registry)
         {
             Registry->Invalidate();
         }

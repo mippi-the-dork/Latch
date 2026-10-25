@@ -1,4 +1,4 @@
-﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 
 #include "LatchInteraction.h"
 
@@ -34,7 +34,9 @@ namespace Latch
         // reliable shared invalidation event (Index, Chroma, Stem, Focus, Origin).
         // A zero deadline requests reconciliation on the next Slate tick.
         double NextRefreshTime = 0.0;
-        constexpr double FallbackRefreshSeconds = 0.50;
+        // The fallback is a compatibility audit, not the main update path.
+        // Selection, Latch actions and row expansion still reconcile immediately.
+        constexpr double FallbackRefreshSeconds = 3.0;
         // Native STreeView builds descendant rows lazily after an expansion change.
         // Permit a few consecutive reconciliation passes while those rows settle,
         // rather than postponing nested Mixed-path processing for half a second.
@@ -368,7 +370,7 @@ namespace Latch
         FOutlinerRuntime Runtime;
         Runtime.Outliner = StaticCastSharedRef<ISceneOutliner>(View.AsShared());
         Outliners.Add(MoveTemp(Runtime));
-        NextRefreshTime = 0.0;
+        bPendingRefresh = true;
         ScheduleHierarchySettle();
     }
 
@@ -400,8 +402,9 @@ namespace Latch
                 if (bAssociationChanged)
                 {
                     ApplyCachedRowVisibility(Existing);
-                    NextRefreshTime = 0.0;
-                    ScheduleHierarchySettle();
+                    // Widget reassociation is not a hierarchy mutation. The
+                    // cached Mixed state is applied before Slate measures it.
+                    bPendingRowRefresh = true;
                 }
                 return;
             }
@@ -415,9 +418,9 @@ namespace Latch
         // SListView measures the row immediately after generation. Apply the
         // last committed Mixed visibility before its first layout prepass.
         ApplyCachedRowVisibility(Rows.Last());
-        // One reconciliation picks up its Mixed state and arrow tint. Multi-frame
-        // settling is reserved for a real SetItemExpansion transition.
-        NextRefreshTime = 0.0;
+        // Discover the native arrow on the next tick. No hierarchy traversal
+        // is necessary just because virtualized Slate generated a row.
+        bPendingRowRefresh = true;
     }
 
     void FRegistry::ApplyCachedRowVisibility(FRowRecord& Record)
@@ -1170,26 +1173,118 @@ namespace Latch
 
     void FRegistry::Tick(double CurrentTime)
     {
-        if (!bActive || (CurrentTime < NextRefreshTime && !bPendingRefresh && HierarchySettleFrames == 0))
+        if (!bActive)
         {
             return;
         }
+
+        // The native Outliner can expand a parent to frame a viewport selection
+        // before broadcasting the Actor-selection notification Latch expects.
+        // Observe only the small editor selection set here, never the Outliner
+        // hierarchy. A changed selection schedules reconciliation this tick,
+        // rather than waiting for the three-second external compatibility audit.
+        TSet<TWeakObjectPtr<AActor>> CurrentSelectedActors;
+        if (GEditor && GEditor->GetSelectedActors())
+        {
+            for (FSelectionIterator It(*GEditor->GetSelectedActors()); It; ++It)
+            {
+                if (AActor* Actor = Cast<AActor>(*It))
+                {
+                    CurrentSelectedActors.Add(Actor);
+                }
+            }
+        }
+        if (!bObservedActorSelection || CurrentSelectedActors.Num() != ObservedSelectedActors.Num() ||
+            CurrentSelectedActors.Difference(ObservedSelectedActors).Num() > 0)
+        {
+            ObservedSelectedActors = MoveTemp(CurrentSelectedActors);
+            bObservedActorSelection = true;
+            bPendingRefresh = true;
+            // Native framing can run after this tick. Recheck at bounded
+            // offsets rather than waiting for the three-second safety audit.
+            SelectionAuditStartedAt = CurrentTime;
+            NextSelectionAudit = 0;
+        }
+
+        // Selection framing is asynchronous relative to the editor selection
+        // notification. Scene Outliner may expand an ancestor AFTER our first
+        // reconciliation, while the selection set itself stays unchanged.
+        // Inspect only already-generated, visible row widgets against the last
+        // committed native expansion snapshot. This is O(visible rows), not a
+        // walk of the Outliner hierarchy, and catches a late native expansion
+        // on the next Slate tick rather than on the 3-second safety audit.
+        if (!bPendingRefresh && HierarchySettleFrames == 0)
+        {
+            for (const FRowRecord& Record : Rows)
+            {
+                const TSharedPtr<ISceneOutliner> RowOutliner = Record.Outliner.Pin();
+                const FSceneOutlinerTreeItemPtr Item = Record.Item.Pin();
+                if (!RowOutliner || !Item || !Record.Row.IsValid())
+                {
+                    continue;
+                }
+                for (const FOutlinerRuntime& Runtime : Outliners)
+                {
+                    if (Runtime.Outliner.Pin() != RowOutliner || !Runtime.bHasExpansionSnapshot)
+                    {
+                        continue;
+                    }
+                    if (const bool* Previous = Runtime.LastPhysicalExpansion.Find(Item->GetID()))
+                    {
+                        if (*Previous != MutableTree(*RowOutliner).IsItemExpanded(Item))
+                        {
+                            bPendingRefresh = true;
+                        }
+                    }
+                    break;
+                }
+                if (bPendingRefresh)
+                {
+                    break;
+                }
+            }
+        }
+
+        // Each selection schedules at most four additional hierarchy passes,
+        // spread across Slate frames. Between passes the fast path only checks
+        // the clock, not the complete tree. This is independent of whether the
+        // native expansion affected a currently registered row widget.
+        static constexpr double SelectionAuditDelays[] = { 0.05, 0.15, 0.35, 0.75 };
+        if (NextSelectionAudit < UE_ARRAY_COUNT(SelectionAuditDelays) &&
+            CurrentTime - SelectionAuditStartedAt >= SelectionAuditDelays[NextSelectionAudit])
+        {
+            ++NextSelectionAudit;
+            bPendingRefresh = true;
+        }
+
+        const bool bHierarchyDirty = bPendingRefresh || HierarchySettleFrames > 0 || CurrentTime >= NextRefreshTime;
+        const bool bRowsDirty = bPendingRowRefresh;
+        if (!bHierarchyDirty && !bRowsDirty)
+        {
+            return;
+        }
+
+        // Slate frequently generates or recycles rows during normal scrolling.
+        // Maintain glyph bindings for those rows without traversing the tree or
+        // calculating Mixed paths. Hierarchy work remains event driven, with a
+        // slower compatibility audit for other plugins and engine-side changes.
+        bPendingRowRefresh = false;
+        RefreshRows();
+        if (!bHierarchyDirty)
+        {
+            return;
+        }
+
         bPendingRefresh = false;
         if (HierarchySettleFrames > 0)
         {
             --HierarchySettleFrames;
         }
-        // No full hierarchy walk on ordinary Slate frames. A Latch action or
-        // row lifecycle event sets the deadline to zero for the next frame.
-        // The fallback catches third-party changes and selection framing.
         NextRefreshTime = CurrentTime + FallbackRefreshSeconds;
-
-        RefreshRows();
         Outliners.RemoveAll([](const FOutlinerRuntime& Runtime)
         {
             return !Runtime.Outliner.IsValid();
         });
-
         for (FOutlinerRuntime& Runtime : Outliners)
         {
             UpdateOutliner(Runtime);
@@ -1213,6 +1308,8 @@ namespace Latch
         Rows.Reset();
         Outliners.Reset();
         HierarchySettleFrames = 0;
+        bPendingRowRefresh = false;
+        NextSelectionAudit = 4;
     }
 
     TSharedPtr<ISceneOutliner> FRegistry::FindOutlinerForPath(const FWidgetPath& Path) const

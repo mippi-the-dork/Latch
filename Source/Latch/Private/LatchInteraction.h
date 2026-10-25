@@ -1,4 +1,4 @@
-﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 
 #pragma once
 
@@ -8,6 +8,7 @@
 #include "SceneOutlinerStandaloneTypes.h"
 
 class ISceneOutliner;
+class AActor;
 class SExpanderArrow;
 class SImage;
 class SButton;
@@ -66,6 +67,21 @@ namespace Latch
         TArray<FRowRecord> Rows;
         TArray<FOutlinerRuntime> Outliners;
         bool bPendingRefresh = false;
+        // Rebinding recycled Slate row widgets does not require a hierarchy walk.
+        bool bPendingRowRefresh = false;
+
+        // Selection is cheap to observe independently of hierarchy traversal.
+        // Some viewport selections reach the Outliner before its selection
+        // notification is delivered; never let Mixed View wait for the fallback.
+        TSet<TWeakObjectPtr<AActor>> ObservedSelectedActors;
+        bool bObservedActorSelection = false;
+
+        // Bounded, selection-scoped reconciliation. Native Scene Outliner may
+        // expand the selected Actor's ancestors after our first callback.
+        // Four delayed audits catch that without full hierarchy work on idle frames.
+        double SelectionAuditStartedAt = 0.0;
+        int32 NextSelectionAudit = 4;
+
 
         static bool IsSupportedItem(const FSceneOutlinerTreeItemPtr& Item);
 
