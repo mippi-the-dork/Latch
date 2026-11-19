@@ -4,6 +4,13 @@
 
 ## Use Latch without returning to the Outliner
 
+<!-- Media target: IMAGE | viewport-menu | docs/assets/media/viewport-menu.png -->
+<figure class="doc-media" data-kind="image" data-media-id="viewport-menu">
+  <img src="../../assets/media-placeholder.png" alt="Latch commands in the viewport's context menu" loading="lazy">
+  <figcaption>Selected Actors can access Latch presentation controls directly from the Level Editor viewport.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture a selected Actor in the Level Editor viewport with the native right-click menu open to its Latch submenu. Include the selected Actor's Outliner row in the editor layout if possible, but do not imply folders are viewport-selected.</span></figcaption>
+</figure>
+
+
 When Actors are selected in the Level Editor viewport, right-click to access their Latch actions from the viewport context menu. This is useful when the object you need to pin or protect was just selected in a crowded environment.
 
 ## Example

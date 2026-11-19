@@ -4,6 +4,13 @@
 
 ## Stored flag
 
+<!-- Media target: IMAGE | suspend-state | docs/assets/media/suspend-state.png -->
+<figure class="doc-media" data-kind="image" data-media-id="suspend-state">
+  <img src="../../assets/media-placeholder.png" alt="Diagram separating the suspended boolean from stored expansion and Keep Visible keys" loading="lazy">
+  <figcaption>Suspension changes reconciliation behavior without deleting previously saved item state.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Draw ULatchSubsystem with independent Expansion, KeepVisible and Suspended fields; show FRegistry choosing either the inactive/native presentation branch or normal latch reconciliation depending on Suspended.</span></figcaption>
+</figure>
+
+
 `ULatchSubsystem::SetSuspended` sets a boolean distinct from `ExpansionStates` and `ExposureKeys`. With persistence enabled, it is stored in `GEditorPerProjectIni` under section `Latch.State.V3` and key `Suspended`.
 
 ## Runtime branch

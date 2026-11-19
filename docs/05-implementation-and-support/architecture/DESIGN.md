@@ -8,6 +8,13 @@ Latch extends the **standard World Outliner**. It doesn't spawn an Actor, replac
 
 ## Three responsibilities
 
+<!-- Media target: IMAGE | architecture-user-flow | docs/assets/media/architecture-user-flow.png -->
+<figure class="doc-media" data-kind="image" data-media-id="architecture-user-flow">
+  <img src="../../assets/media-placeholder.png" alt="Simple diagram explaining how Latch stores intent and updates World Outliner presentation" loading="lazy">
+  <figcaption>The subsystem stores workspace choices, the registry reconciles hierarchy state, and row widgets display the result.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Draw three labeled blocks: ULatchSubsystem Saved Intent → FRegistry Hierarchy Reconciliation → World Outliner Rows/Controls. Include a selection/pin event input and illustrate that the actual level hierarchy is unchanged.</span></figcaption>
+</figure>
+
+
 **The subsystem** remembers which Actor/Folder rows are latched or pinned, and whether the tool is suspended.
 
 **The registry** watches live tree items, selection and hierarchy changes, reconciles logical versus physical expansion, and determines which rows belong in the minimum Mixed View path.

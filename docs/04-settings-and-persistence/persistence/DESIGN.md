@@ -10,6 +10,13 @@ By default, Latch saves **Expansion Latches, Keep Visible pins, and Suspend stat
 
 ## When persistence is disabled
 
+<!-- Media target: GIF | persistence-workflow | docs/assets/media/persistence-workflow.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="persistence-workflow">
+  <img src="../../assets/media-placeholder.png" alt="Animation of disabling persistence, arranging a hierarchy and observing a clean restart" loading="lazy">
+  <figcaption>Latch can retain a temporary workspace arrangement for the active editor session without saving it for the next launch.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record Project Settings with Persist State Across Editor Restarts unchecked, then set a red latch and white pin, close/reopen a disposable project and show those temporary states absent. Make clear that the level itself was not changed.</span></figcaption>
+</figure>
+
+
 Go to **Project Settings → Plugins → Latch → Persist State Across Editor Restarts** and disable the setting. Your current session's latches and pins remain usable, but saved persisted Latch state is cleared so the next editor session begins without that previous arrangement.
 
 ## Example

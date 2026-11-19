@@ -4,6 +4,13 @@
 
 ## Keep Visible follows the item
 
+<!-- Media target: GIF | identity-move | docs/assets/media/identity-move.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="identity-move">
+  <img src="../../assets/media-placeholder.png" alt="Animation moving a pinned Actor between folders while retaining its pin" loading="lazy">
+  <figcaption>Keep Visible remains associated with the Actor's identity when it is moved or reparented in the Outliner.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a white-pinned Actor in Folder A, drag it to Folder B or attach it under another Actor, then collapse the new ancestor and show its white pin and required Mixed path still functioning. Include both before and after states.</span></figcaption>
+</figure>
+
+
 Latch associates a pin with the Actor or Folder identity, not simply with the row's current screen position. Supported renames, attachment/reparent changes and folder moves preserve the pin where a stable ID is available.
 
 ## Duplicates, deletion and Undo

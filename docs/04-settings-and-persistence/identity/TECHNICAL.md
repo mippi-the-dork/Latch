@@ -4,6 +4,13 @@
 
 ## Identity implementation
 
+<!-- Media target: IMAGE | identity-keys | docs/assets/media/identity-keys.png -->
+<figure class="doc-media" data-kind="image" data-media-id="identity-keys">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Actor GUID and Folder GUID/path identity keys" loading="lazy">
+  <figcaption>Latch associates editor presentation state with stable Actor or Folder identifiers when available.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create an example of Actor|WorldPackage|GUID, FolderGuid|WorldPackage|GUID, and the fallback ActorPath/FolderPath key families. Show those keys mapping to expansion and pin state inside ULatchSubsystem.</span></figcaption>
+</figure>
+
+
 `ULatchSubsystem::MakeItemKey` uses `AActor::GetActorGuid()` and the world package for Actors with valid GUIDs, falling back to Actor object path. For Folders it prefers `FFolder::GetActorFolderGuid`, then uses folder path and world package. World items use a world package key.
 
 ## Deletion

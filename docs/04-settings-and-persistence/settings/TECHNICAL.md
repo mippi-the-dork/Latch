@@ -4,6 +4,13 @@
 
 ## Settings class
 
+<!-- Media target: IMAGE | settings-ownership | docs/assets/media/settings-ownership.png -->
+<figure class="doc-media" data-kind="image" data-media-id="settings-ownership">
+  <img src="../../assets/media-placeholder.png" alt="Diagram distinguishing Latch Project Settings from per-project editor state" loading="lazy">
+  <figcaption>Appearance preferences live in Latch configuration, while saved item latches and pins live in editor workspace configuration.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Diagram ULatchSettings reading Config/DefaultLatch.ini and ULatchSubsystem saving section Latch.State.V3 to GEditorPerProjectIni. Label spacing/color/hover/persist preference separately from per-item expansion, pin and Suspend state.</span></figcaption>
+</figure>
+
+
 `ULatchSettings` extends `UDeveloperSettings` with `UCLASS(Config=Latch,DefaultConfig)` and display name Latch. The category is **Plugins** under Project Settings.
 
 ## Default fields

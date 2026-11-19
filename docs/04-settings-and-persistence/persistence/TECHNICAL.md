@@ -4,6 +4,13 @@
 
 ## Config storage
 
+<!-- Media target: IMAGE | persistence-config | docs/assets/media/persistence-config.png -->
+<figure class="doc-media" data-kind="image" data-media-id="persistence-config">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Latch.State.V3 expansion, KeepVisible and Suspended records" loading="lazy">
+  <figcaption>Latch stores stable keyed expansion and pin information in per-project editor configuration rather than level packages.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a technical diagram showing Section Latch.State.V3 with Expansion array, KeepVisible array, and Suspended boolean written to GEditorPerProjectIni; distinguish it from .umap and external Actor .uasset packages.</span></figcaption>
+</figure>
+
+
 `ULatchSubsystem::LoadState` and `SaveState` use section `Latch.State.V3` in `GEditorPerProjectIni`. Arrays `Expansion` and `KeepVisible` encode item keys and `ELatchExpansionState` values; the `Suspended` boolean is saved separately.
 
 ## Save conditions
