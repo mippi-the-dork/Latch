@@ -151,14 +151,14 @@
     });
 
     pages.push({title:'Roadmap',path:'ROADMAP.md',kind:'Document',
-      summary:'Planned Quick Action categories, third-party extension API and Quick Widget Builder',
-      search:'roadmap planned features future extension api third party plugin micro widget builder'});
+      summary:'Latch v2.0.3 current features and uncommitted future research priorities',
+      search:'roadmap current feature history future research compatibility hierarchy usability'});
     pages.push({title:'Documentation Audit',path:'DOCUMENTATION_AUDIT.md',kind:'Document',
       summary:'Documentation quality findings, prioritized fixes and verification gaps',
       search:'audit documentation improvements quality gaps testing screenshots search'});
     pages.push({title:'Verification Matrix',path:'VERIFICATION_MATRIX.md',kind:'Document',
-      summary:'Native Unreal Editor and website QA checklists with explicit results',
-      search:'verification matrix qa tests perforce one file per actor world partition focus website'});
+      summary:'Latch Unreal Editor and website verification checklist',
+      search:'verification tests editor hierarchy search latch pins suspension website'});
     state.pages=pages;
     state.byPath=new Map(pages.map(p=>[p.path,p]));
   }
@@ -166,8 +166,8 @@
   function renderNav(){
     const out=[];
     out.push('<a class="nav-home" data-page="'+esc(state.manifest.home)+'" href="'+pageUrl(state.manifest.home)+'">⌂ Documentation Home</a>');
-    out.push('<a class="ref-link" data-page="ROADMAP.md" href="'+pageUrl('ROADMAP.md')+'">Roadmap · Planned Features</a>');
-    out.push('<div class="nav-label">CURRENT VERSION · '+esc((state.manifest.baseline||'v2.1.0').replace('Focus ','').toUpperCase())+'</div>');
+    out.push('<a class="ref-link" data-page="ROADMAP.md" href="'+pageUrl('ROADMAP.md')+'">Roadmap · Current & Future</a>');
+    out.push('<div class="nav-label">CURRENT VERSION · '+esc((state.manifest.baseline||'v2.1.0').replace('Latch ','').toUpperCase())+'</div>');
     
     
     
@@ -268,6 +268,15 @@
       if(target.path)img.setAttribute('src',target.path+(target.hash||''));
     });
 
+    // Relative media paths refer to the Markdown source folder, not the site's
+    // query-driven URL. Figure assets therefore render equally on GitHub and Pages.
+    els.article.querySelectorAll('img[src]').forEach(img=>{
+      const raw=img.getAttribute('src')||'';
+      if(!raw||/^(?:[a-z]+:|\/|#)/i.test(raw))return;
+      const target=resolveRelative(state.current,raw);
+      if(target.path)img.setAttribute('src',target.path+(target.hash?'#'+target.hash:''));
+    });
+
     els.article.querySelectorAll('table').forEach(table=>{
       if(table.parentElement?.classList.contains('table-wrap')) return;
       const wrap=document.createElement('div'); wrap.className='table-wrap';
@@ -354,7 +363,7 @@
       const md=await r.text();
       if(token!==state.request) return;
       renderMarkdown(md);
-      document.title=label(state.currentMeta)+' | Focus Documentation';
+      document.title=label(state.currentMeta)+' | Latch Documentation';
       const target=hash||location.hash.slice(1);
       if(target) requestAnimationFrame(()=>document.getElementById(target)?.scrollIntoView({block:'start'}));
       else window.scrollTo({top:0,behavior:'auto'});
@@ -401,7 +410,7 @@
           p.searchBody=stripSearchText(await r.text());
           p.searchBodyLower=p.searchBody.toLowerCase();
         }catch(error){
-          console.warn('Focus search could not index',p.path,error);
+          console.warn('Latch search could not index',p.path,error);
         }
       }
     }
@@ -517,7 +526,7 @@
       const r=await fetch('site-manifest.json',{cache:'no-cache'});
       if(!r.ok)throw new Error('Could not load documentation manifest.');
       state.manifest=await r.json();
-      const currentVersion=String(state.manifest.baseline||'Focus v2.1.0').match(/v\d+\.\d+(?:\.\d+)?/)?.[0]||'v2.1.0';
+      const currentVersion=String(state.manifest.baseline||'Latch v2.0.3').match(/v\d+\.\d+(?:\.\d+)?/)?.[0]||'v2.1.0';
       if(els.version) els.version.textContent=currentVersion+' DOCUMENTED';
       await loadStructure();
       buildPages();
