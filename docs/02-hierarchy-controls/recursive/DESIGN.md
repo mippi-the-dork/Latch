@@ -4,6 +4,13 @@
 
 ## Shift-click expands or collapses a branch
 
+<!-- Media target: GIF | recursive-protected | docs/assets/media/recursive-protected.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="recursive-protected">
+  <img src="../../assets/media-placeholder.png" alt="Animation of recursive Shift-click respecting red latched child folders" loading="lazy">
+  <figcaption>Recursive expansion changes unlocked descendants but preserves the intended expansion of red latched children.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a parent folder with at least three nested child folders, one red-open and one red-closed. Shift-click the unlocked parent to collapse and expand; show the red children retaining their protected logical states.</span></figcaption>
+</figure>
+
+
 On an **unlatched** parent triangle, hold **Shift** and click to recursively expand or collapse unlocked descendants. This works through the normal Outliner hierarchy rather than moving any Actors.
 
 A **red** descendant retains its own latched-open or latched-closed instruction even when a higher branch is recursively changed.

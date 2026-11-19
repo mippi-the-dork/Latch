@@ -4,6 +4,13 @@
 
 ## Native hierarchy interaction
 
+<!-- Media target: IMAGE | recursive-flow | docs/assets/media/recursive-flow.png -->
+<figure class="doc-media" data-kind="image" data-media-id="recursive-flow">
+  <img src="../../assets/media-placeholder.png" alt="Flowchart of recursive expansion skipping children with saved latch states" loading="lazy">
+  <figcaption>Recursive actions follow the real Outliner tree and protect descendants that already have expansion latches.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Draw FRegistry HandleRecursiveExpanderClick walking the live tree, checking ULatchSubsystem expansion state, applying changes only to unlocked descendants and requesting reconciliation afterward.</span></figcaption>
+</figure>
+
+
 `FRegistry::HandleRecursiveExpanderClick` enumerates the Outliner tree and applies expansion changes while checking each item's stored latch state. `ELatchExpansionState` and live child checks determine protected branches.
 
 ## Logical versus visible tree

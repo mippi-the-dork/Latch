@@ -10,6 +10,13 @@ It preserves the prior **logical expansion**. Red latches and white pins are not
 
 ## What happens on clearing search?
 
+<!-- Media target: GIF | search-restore | docs/assets/media/search-restore.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="search-restore">
+  <img src="../../assets/media-placeholder.png" alt="Animation of World Outliner search temporarily changing hierarchy presentation and restoring Latch state" loading="lazy">
+  <figcaption>Search can reveal matching rows without permanently replacing the saved expansion and Keep Visible choices.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a red latched-closed folder and white pinned descendant, then type a search for an unrelated Actor, inspect results, and clear the search. Show the red and white state returning and the correct yellow paths recalculating.</span></figcaption>
+</figure>
+
+
 When you remove the query, Latch restores the pre-search logical expansion state, reapplies expansion latches and Keep Visible requirements, then calculates any necessary yellow Mixed View paths.
 
 ## Try it

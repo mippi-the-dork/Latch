@@ -4,6 +4,13 @@
 
 ## Detection
 
+<!-- Media target: IMAGE | search-snapshot | docs/assets/media/search-snapshot.png -->
+<figure class="doc-media" data-kind="image" data-media-id="search-snapshot">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of capturing logical expansion before Outliner search and restoring afterward" loading="lazy">
+  <figcaption>Latch preserves a pre-search logical expansion snapshot while Unreal controls the temporary search presentation.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Make a three-stage flowchart labeled Search Starts / Search Active / Search Clears. Show Runtime SearchLogicalExpansion, PresentInactive and restoration plus Mixed View recalculation; avoid depicting search as modifying persisted red/white state.</span></figcaption>
+</figure>
+
+
 `FRegistry::UpdateOutliner` calls `IsSearchActive` and treats search as a temporary authority change. On entry, `Runtime.SearchLogicalExpansion` captures the pre-search logical flags and a `bSearchWasActive` marker.
 
 ## While searching

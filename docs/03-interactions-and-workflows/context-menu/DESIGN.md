@@ -4,6 +4,13 @@
 
 ## Where the commands live
 
+<!-- Media target: IMAGE | context-outliner-menu | docs/assets/media/context-outliner-menu.png -->
+<figure class="doc-media" data-kind="image" data-media-id="context-outliner-menu">
+  <img src="../../assets/media-placeholder.png" alt="World Outliner context menu showing Latch's available hierarchy actions" loading="lazy">
+  <figcaption>The Latch submenu exposes explicit expansion, pin, branch-clearing and suspension commands.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture a right-click on a parent folder in the World Outliner with the Latch submenu open; show Latch Current Expansion, Latch Expanded/Collapsed, Unlatch, Keep Visible, branch clear, Suspend and global clear options if present in the current UI.</span></figcaption>
+</figure>
+
+
 Right-click a supported Actor or Folder in the World Outliner and open **Latch**. The submenu provides operations beyond the triangle and pin, including **Latch Current Expansion**, **Latch Expanded**, **Latch Collapsed**, **Unlatch Expansion**, **Keep Visible / Stop Keeping Visible**, branch clearing, suspension, and global clearing.
 
 ## Which command should I choose?
