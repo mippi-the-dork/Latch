@@ -4,6 +4,13 @@
 
 ## Symptom-to-owner map
 
+<!-- Media target: IMAGE | troubleshooting-flow | docs/assets/media/troubleshooting-flow.png -->
+<figure class="doc-media" data-kind="image" data-media-id="troubleshooting-flow">
+  <img src="../../assets/media-placeholder.png" alt="Diagnostic flowchart for Latch missing controls, state and refresh issues" loading="lazy">
+  <figcaption>Diagnosing Latch begins by identifying whether the issue involves UI registration, keyed persistence or live row reconciliation.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a branching diagram with symptom groups Column/Menu Missing → FLatchModule, State Lost → ULatchSubsystem, Yellow Path Wrong → FRegistry MixedItems, Input Gesture Wrong → FInputProcessor, Search Restore Wrong → SearchLogicalExpansion.</span></figcaption>
+</figure>
+
+
 | Symptom | First implementation to inspect |
 | --- | --- |
 | Missing Outliner controls | `FLatchModule` column and menu registration |

@@ -14,6 +14,13 @@ Normal scrolling should not require rebuilding the entire hierarchy on every fra
 
 ## A demanding workflow to test
 
+<!-- Media target: GIF | performance-outliner | docs/assets/media/performance-outliner.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="performance-outliner">
+  <img src="../../assets/media-placeholder.png" alt="Animation of Latch maintaining a large Outliner during scrolling, selection and search" loading="lazy">
+  <figcaption>Latch's event-driven hierarchy updates are designed to avoid continuous full-tree work during ordinary row interaction.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a realistically large UE Outliner with many nested folders: scroll, pin an item, select a viewport Actor, search and clear, then resume. Include an FPS/stat overlay only if measured honestly and don't invent a performance comparison.</span></figcaption>
+</figure>
+
+
 Open a level with deep nested folders and many Actor rows. Pin distant descendants, latch some intermediate parents, scroll quickly, select Actors in the viewport, search and clear the query, then suspend and resume. Check that the visible paths remain correct and the Outliner doesn't develop disruptive hitches.
 
 ## Troubleshooting refresh issues

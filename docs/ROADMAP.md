@@ -5,6 +5,13 @@
 
 ## Where Latch is today
 
+<!-- Media target: IMAGE | roadmap-current-future | docs/assets/media/roadmap-current-future.png -->
+<figure class="doc-media" data-kind="image" data-media-id="roadmap-current-future">
+  <img src="assets/media-placeholder.png" alt="Timeline separating Latch v2.0.3 features from uncommitted future research" loading="lazy">
+  <figcaption>The current release supports hierarchy latches, Mixed View, pins and editor persistence; future ideas have not been assigned a release.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a clean timeline showing Current: Latch v2.0.3 with expansion, Mixed View, Keep Visible and persistence. Show Future Review as explicitly uncommitted, containing compatibility, usability, performance and testing, without an invented v3.0 milestone.</span></figcaption>
+</figure>
+
+
 | Area | Current implementation |
 | --- | --- |
 | Expansion | Red Latched Expanded and Latched Collapsed parent states |

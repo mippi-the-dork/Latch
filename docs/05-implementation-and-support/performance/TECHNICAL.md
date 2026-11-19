@@ -4,6 +4,13 @@
 
 ## Event-driven scheduling
 
+<!-- Media target: IMAGE | performance-reconciliation | docs/assets/media/performance-reconciliation.png -->
+<figure class="doc-media" data-kind="image" data-media-id="performance-reconciliation">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of event-driven invalidation and slower fallback reconciliation" loading="lazy">
+  <figcaption>Latch coalesces hierarchy updates triggered by editor events and retains a separate slow safety audit for otherwise unannounced changes.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Draw selection/Actor/hierarchy/row lifecycle events feeding FRegistry Invalidate and scheduled Tick/UpdateOutliner. Add the 3-second fallback audit as a distinct low-frequency safety path, not the normal response latency.</span></figcaption>
+</figure>
+
+
 `LatchInteraction.cpp` documents row lifecycle maintenance separately from hierarchy reconciliation. `NextRefreshTime`, `ScheduleHierarchySettle`, and `FRegistry::Invalidate` coalesce requests so expensive work is not needed on every Slate paint.
 
 ## Safety pass

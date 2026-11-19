@@ -4,6 +4,13 @@
 
 ## Updating a precompiled installation
 
+<!-- Media target: IMAGE | updating-folder | docs/assets/media/updating-folder.png -->
+<figure class="doc-media" data-kind="image" data-media-id="updating-folder">
+  <img src="../../assets/media-placeholder.png" alt="Latch plugin directory in a project's Plugins folder after an update" loading="lazy">
+  <figcaption>Replacing the complete Latch folder avoids mixing source and binary files from incompatible releases.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture Windows File Explorer showing YourProject/Plugins/Latch with Latch.uplugin directly inside and Source/Resources/Config beneath it. Include a clear version reference for the downloaded release and exclude irrelevant project folders.</span></figcaption>
+</figure>
+
+
 1. Close Unreal Editor.
 2. Download the release matching your Unreal Engine and Win64 platform from the [Latch repository](https://github.com/mippi-the-dork/Latch).
 3. Replace the complete `YourProject/Plugins/Latch/` folder. Do not merge old source or binaries into a new release.

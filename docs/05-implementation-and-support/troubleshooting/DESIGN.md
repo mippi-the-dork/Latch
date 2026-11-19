@@ -8,6 +8,13 @@ An Expansion Latch requires an **eligible parent with real children**. Try a fol
 
 ## Why are ancestors yellow?
 
+<!-- Media target: IMAGE | troubleshooting-mixed | docs/assets/media/troubleshooting-mixed.png -->
+<figure class="doc-media" data-kind="image" data-media-id="troubleshooting-mixed">
+  <img src="../../assets/media-placeholder.png" alt="Comparison of a normal collapsed folder and a yellow Mixed View ancestor" loading="lazy">
+  <figcaption>A yellow ancestor is logically collapsed but temporarily exposes the necessary path to a selected or pinned descendant.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture two nearby nested folders in the Outliner: one ordinary grey collapsed, the other yellow showing only a pinned or selected child path. Include a visible white pin or selection highlight to explain the exposure requirement.</span></figcaption>
+</figure>
+
+
 A selected, pinned or latched-open descendant needs exposure through logically collapsed ancestors. Yellow Mixed View is expected. Click the yellow triangle for normal full expansion, or remove the underlying selection/pin requirement.
 
 ## Why isn't a white pin making my Actor visible in the viewport?
