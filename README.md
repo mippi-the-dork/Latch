@@ -1,190 +1,144 @@
 # Latch
 
-**Keep your World Outliner organized—even when Unreal has other plans.**
+**Persistent World Outliner Hierarchy Controls for Unreal Engine**
 
-Latch is a lightweight, editor-only Unreal Engine plugin that gives you control over which hierarchy branches stay expanded, which stay collapsed, and which important items remain easy to find. It works directly inside Unreal's native **World Outliner**, without replacing your hierarchy or changing your level.
+**Keep your Outliner organized. Even when your workflow needs something inside a collapsed branch.**
 
-[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)](https://www.unrealengine.com/)
-![Platform](https://img.shields.io/badge/Platform-Win64-blue)
-![Type](https://img.shields.io/badge/Plugin-Editor--Only-green)
-![Version](https://img.shields.io/badge/Version-2.0.3-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+Latch keeps the hierarchy you arranged in Unreal Engine's **World Outliner** under your control. Latch folders and Actors open or closed, reveal only the paths to important descendants, and pin frequently used items—without restructuring your level or replacing Unreal's native Outliner.
 
-![Latch hierarchy controls in the Unreal Engine World Outliner](Doc/Images/Latch-Hero.png)
+[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)](https://www.unrealengine.com/) ![Platform](https://img.shields.io/badge/Platform-Win64-blue) ![Editor Only](https://img.shields.io/badge/Plugin-Editor%20Only-217346) ![Version](https://img.shields.io/badge/Latch-v2.0.3-blue) [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**[Explore the Latch Documentation](https://mippi-the-dork.github.io/Latch/)** · **[Get Latch on Fab](https://www.fab.com/listings/280bc637-782a-45a3-a949-9423e745bf34)** · **[GitHub Releases](https://github.com/mippi-the-dork/Latch/releases)**
+<p align="center">
+  <img src="Doc/Images/Latch-Hero.png" alt="Latch persistent World Outliner expansion controls and selective hierarchy presentation in Unreal Engine" width="100%">
+</p>
 
 ---
 
-## The problem: your hierarchy won't stay the way you left it
+## Your hierarchy should stay organized
 
-Anyone working in a large Unreal level knows the routine: you've carefully collapsed finished areas, expanded the section you're working on, and arranged the World Outliner so the important things are easy to reach.
+A large Unreal level is easier to work in when finished areas are collapsed, the current work area is expanded, and important Actors are easy to find. But selection, search and recursive expansion can disturb that carefully arranged tree.
 
-Then you select an Actor, search for something, or navigate a deeply nested folder—and suddenly you're digging through the hierarchy again.
+Sometimes you need a collapsed parent to **stay collapsed** while an Actor deep inside it remains accessible. Normally, reaching that Actor means expanding the branch and bringing back all its siblings.
 
-The underlying problem is simple: **the Outliner has one tree, but you often need two things at once**. You want a parent to remain collapsed *and* a particular descendant to remain accessible.
+**Latch gives you control over both.**
 
-**Latch lets you do both.** It remembers your expansion choices and reveals only the hierarchy paths you actually need, without reorganizing a single Actor.
+- **Preserve your arrangement.** Keep eligible folders and Actor parents latched open or closed, even during ordinary expansion operations.
+- **Find what matters without the clutter.** Reveal only the ancestor path needed for a selected, pinned or latched-open descendant.
+- **Keep important items close.** Pin Actors and Folders you want to remain accessible through collapsed branches.
+- **Use the Outliner you already know.** Work with familiar triangles, modifiers and context menus—not a separate window.
+- **Keep editing preferences separate from level content.** Save your hierarchy arrangement across sessions without storing it in your Actor or level packages.
 
-## What Latch brings to the Outliner
+<p align="center">
+  <img src="Doc/Images/Latch-Controls.png" alt="Latch expansion and Keep Visible controls integrated into World Outliner rows" width="860">
+</p>
 
-### Lock a branch open. Or keep it closed.
+## Explore the documentation
 
-![Latch expansion states and Keep Visible pins](Doc/Images/Latch-Controls.png)
+> ### [**Latch Documentation — Full User Guide and Technical Reference**](https://mippi-the-dork.github.io/Latch/)
+>
+> **Everything you need to learn and use Latch, in one place.** Find step-by-step interaction guides, understand the red, yellow and white indicators, configure persistence, troubleshoot hierarchy behavior, or explore how Latch integrates with the Unreal Editor.
+>
+> **[Get Started](https://mippi-the-dork.github.io/Latch/?page=01-getting-started%2FREADME.md)** · **[Hierarchy Controls](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2FREADME.md)** · **[Interactions & Workflows](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2FREADME.md)** · **[Settings & Persistence](https://mippi-the-dork.github.io/Latch/?page=04-settings-and-persistence%2FREADME.md)**
 
-**Expansion Latches** let you protect the current expanded or collapsed state of an eligible Actor or Folder. A **red triangle** shows that a parent is latched. Ordinary expansion clicks and recursive operations respect that choice until you remove the latch.
+The README introduces what Latch offers. **The [documentation website](https://mippi-the-dork.github.io/Latch/) is the maintained reference for exact interactions, installation, expected behavior and technical details.**
 
-A finished environment section can stay neatly closed while your active work area stays open.
+## Three visual states. One predictable hierarchy.
 
-**[See Expansion Latches in action](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fexpansion%2FDESIGN.md)**
+Latch builds on native World Outliner expansion rather than creating a competing hierarchy. Its visual language helps you distinguish **your saved intent** from **temporary paths the editor needs to show**.
 
-### Keep important items accessible without opening everything
-
-**Mixed View** solves the awkward case where a deeply nested Actor needs to be accessible inside a collapsed branch. Latch exposes only the required path and uses **yellow triangles** to show ancestors that are logically collapsed but temporarily presenting a descendant.
-
-Unrelated sibling branches can stay out of your way. A yellow path is temporary presentation—not a new saved expansion mode.
-
-**[Understand Mixed View](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fmixed-view%2FDESIGN.md)**
-
-### Pin the Actors and Folders you keep coming back to
-
-![Keep Visible in the World Outliner](Doc/Images/Latch-Keep-Visible.gif)
-
-**Keep Visible** puts a small pin beside eligible Actor and Folder labels. Turn it on and the pin becomes **white**; Latch can keep that item reachable even when its ancestors are collapsed. The pin follows the item's identity when it moves or is renamed, where stable identity is available.
-
-This is **Outliner visibility**, not viewport visibility. It doesn't turn an Actor's rendering on or off.
-
-**[Explore Keep Visible](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fkeep-visible%2FDESIGN.md)**
-
-### Fits the way you already work
-
-Latch builds on Unreal's existing World Outliner instead of introducing another window or a separate hierarchy.
-
-- **Familiar input:** normal clicking still handles unlocked expansion; Alt-click latches a parent, and Shift-click handles recursive expansion while respecting existing latches.
-- **Multiple items at once:** apply expansion latches or Keep Visible pins across eligible selected rows.
-- **Right-click access:** reach Latch commands through the World Outliner and selected-Actor viewport context menus.
-- **Search-aware behavior:** search temporarily controls the visible tree; when you clear the query, Latch restores your logical arrangement.
-- **Suspend and resume:** return temporarily to native Outliner expansion without deleting your recorded latch and pin choices.
-
-**[Multi-selection](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fmulti-selection%2FDESIGN.md)** · **[Context menus](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fcontext-menu%2FDESIGN.md)** · **[Search behavior](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsearch%2FDESIGN.md)** · **[Suspend / Resume](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsuspend%2FDESIGN.md)**
-
-### Your preferred layout can survive an editor restart
-
-Latch can preserve expansion latches, Keep Visible pins, and suspension state across level reloads and editor sessions. That information is stored in **per-project editor configuration**, not inside your level or Actor packages.
-
-That means organizing the Outliner with Latch doesn't itself require saving the level or checking out External Actor files. You can also disable persistence when you only want an arrangement for the current session.
-
-![Latch Project Settings](Doc/Images/Latch-Settings.png)
-
-Adjust expansion spacing, latch and Mixed View colors, Keep Visible hover behavior, and persistence in **Project Settings → Plugins → Latch**.
-
-**[How persistence works](https://mippi-the-dork.github.io/Latch/?page=04-settings-and-persistence%2Fpersistence%2FDESIGN.md)** · **[Project Settings reference](https://mippi-the-dork.github.io/Latch/?page=04-settings-and-persistence%2Fsettings%2FDESIGN.md)**
-
----
-
-## Imagine your next large level
-
-You have a finished section with hundreds of Actors, an active area you're editing, and a few gameplay Actors scattered deep inside the hierarchy.
-
-With Latch, you can keep the finished section **latched closed**, the active folder **latched open**, and the important gameplay Actors **pinned**. When you need one of those pinned Actors, Latch can reveal just its path—not every sibling under every collapsed ancestor.
-
-**Less hunting through folders. More time working in the level.**
-
----
-
-## Documentation
-
-### Everything you need, in one place
-
-The README is an introduction to Latch. The dedicated documentation site contains the full usage instructions, feature behavior, examples, technical details, limitations, troubleshooting, and future roadmap.
-
-**[Open the complete Latch Documentation](https://mippi-the-dork.github.io/Latch/)**
-
-| Looking for… | Start here |
+| Hierarchy control | What it does |
 | --- | --- |
-| Installing Latch | [Installation and compatibility](https://mippi-the-dork.github.io/Latch/?page=01-getting-started%2Finstall%2FDESIGN.md) |
-| Trying it for the first time | [First Use](https://mippi-the-dork.github.io/Latch/?page=01-getting-started%2Ffirst-use%2FDESIGN.md) |
-| Understanding red, yellow and white indicators | [Hierarchy Controls](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2FREADME.md) |
-| Working across multiple selected items | [Multi-Selection](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fmulti-selection%2FDESIGN.md) |
-| Using search without losing expansion choices | [Search-Aware Presentation](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsearch%2FDESIGN.md) |
-| Saving and restoring your layout | [Workspace Persistence](https://mippi-the-dork.github.io/Latch/?page=04-settings-and-persistence%2Fpersistence%2FDESIGN.md) |
-| Troubleshooting unexpected behavior | [Troubleshooting and FAQ](https://mippi-the-dork.github.io/Latch/?page=05-implementation-and-support%2Ftroubleshooting%2FDESIGN.md) |
-| Understanding the C++ implementation | [Editor Architecture — Technical](https://mippi-the-dork.github.io/Latch/?page=05-implementation-and-support%2Farchitecture%2FTECHNICAL.md) |
-| What might come next | [Roadmap](https://mippi-the-dork.github.io/Latch/?page=ROADMAP.md) |
+| **[Expansion Latches — Red](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fexpansion%2FDESIGN.md)** | Hold an eligible parent expanded or collapsed, protecting its intended state from ordinary and recursive expansion changes. |
+| **[Mixed View — Yellow](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fmixed-view%2FDESIGN.md)** | Temporarily expose the minimum ancestor path to a required descendant without fully opening unrelated siblings or replacing the logical collapse. |
+| **[Keep Visible — White](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fkeep-visible%2FDESIGN.md)** | Pin an Actor or Folder so Latch can keep its Outliner row reachable through collapsed ancestors. |
 
-The documentation pairs practical **Design** guides with **Technical** references, so you can either learn the interaction or inspect how it integrates with Unreal Engine.
+**Red is a stored expansion choice. Yellow is a temporary presentation state. White marks a pinned item.** They work together without changing which Actors belong to which folders or attachment hierarchies.
+
+## Useful in real production workflows
+
+### Keep finished areas closed and active work open
+
+Expand your active folder and **Alt-click** its triangle to latch it open. Collapse a finished folder and Alt-click to latch it closed. Red expansion indicators show which parents are protected.
+
+Use **Shift-click** for recursive expansion of unlocked branches while respecting the existing red latches. You can also apply compatible actions across selected rows.
+
+[**Learn about expansion, recursive changes and multi-selection →**](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Frecursive%2FDESIGN.md)
+
+### Reach deeply nested Actors without expanding everything
+
+Select an Actor in the viewport or pin one deep inside a collapsed hierarchy. Latch can show only the path to that item, turning the necessary logically collapsed ancestor indicators **yellow**. Unrelated sibling rows remain out of the way.
+
+Click a yellow triangle when you want to commit a normal expanded view of that branch.
+
+<p align="center">
+  <img src="Doc/Images/Latch-Keep-Visible.gif" alt="Latch Keep Visible pin revealing a descendant through a collapsed World Outliner hierarchy" width="800">
+</p>
+
+[**Explore Mixed View and Keep Visible →**](https://mippi-the-dork.github.io/Latch/?page=02-hierarchy-controls%2Fmixed-view%2FDESIGN.md)
+
+### Keep your arrangement while you search or switch tasks
+
+World Outliner search temporarily takes control of what is shown. Clear the search, and Latch restores your logical expansion choices and recalculates any needed Mixed View paths.
+
+Need ordinary Unreal expansion for a while? **Suspend Latch** without discarding your stored red latches and white pins, then resume when you're ready.
+
+[**Search behavior](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsearch%2FDESIGN.md)** · **[Suspend and Resume](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsuspend%2FDESIGN.md)**
+
+### Keep your workspace yours
+
+Latch can preserve expansion latches, Keep Visible pins and the suspended state between editor sessions using **per-project editor configuration**, not your level or External Actor packages.
+
+Disable persistence when an arrangement is only useful for the current session. Adjust spacing, semantic colors and pin hover behavior through **Project Settings → Plugins → Latch**.
+
+<p align="center">
+  <img src="Doc/Images/Latch-Settings.png" alt="Latch Project Settings for colors, spacing, Keep Visible hover behavior and persistence" width="800">
+</p>
+
+[**Learn how Latch persistence and saved state work →**](https://mippi-the-dork.github.io/Latch/?page=04-settings-and-persistence%2Fpersistence%2FDESIGN.md)
 
 ## Get Latch
 
-| | |
-| --- | --- |
-| **Current plugin version** | 2.0.3 |
-| **Engine** | Unreal Engine 5.8.x |
-| **Platform** | Windows 64-bit |
-| **Type** | Editor-only plugin |
-| **Packaged game dependency** | None |
+**Latch v2.0.3** targets **Unreal Engine 5.8.x on Windows 64-bit** and runs in the **Editor only**.
 
-**[Get Latch on Fab](https://www.fab.com/listings/280bc637-782a-45a3-a949-9423e745bf34)** · **[Download from GitHub Releases](https://github.com/mippi-the-dork/Latch/releases)** · **[Installation Guide](https://mippi-the-dork.github.io/Latch/?page=01-getting-started%2Finstall%2FDESIGN.md)**
+For most users, install through Fab or use a compatible prebuilt release. Developers can also build the complete source from this repository.
 
-If you prefer to build from source, this repository contains Latch's full plugin code. See the documentation's [installation and compatibility guide](https://mippi-the-dork.github.io/Latch/?page=01-getting-started%2Finstall%2FTECHNICAL.md) for implementation-oriented details.
+**[Get Latch on Fab](https://www.fab.com/listings/280bc637-782a-45a3-a949-9423e745bf34)** · **[Download GitHub Releases](https://github.com/mippi-the-dork/Latch/releases)** · **[Installation Guide](https://mippi-the-dork.github.io/Latch/?page=01-getting-started%2Finstall%2FDESIGN.md)** · **[First Five Minutes](https://mippi-the-dork.github.io/Latch/?page=01-getting-started%2Ffirst-use%2FDESIGN.md)**
 
----
+## Important limitations
 
-## What Latch does not do
+Latch is a **World Outliner presentation utility**, not a replacement hierarchy system, an Actor-visibility tool or a runtime gameplay feature.
 
-Latch is intentionally a **World Outliner hierarchy presentation tool**, not a general-purpose level editing or organization system.
+- **Editor-only.** Latch does not run in packaged games or maintain persistent Outliner state for PIE/runtime-spawned Actors.
+- **Expansion latches require children.** A childless row has no expandable branch to latch. If a parent loses its final child, its previous latch may be cleared rather than automatically restored when a child returns.
+- **Keep Visible affects Outliner rows, not rendering.** Pins do not change viewport visibility, Hidden in Game, or gameplay visibility. Root-level pins have no collapsed ancestor path to reveal.
+- **Search temporarily controls the tree.** Unreal's search presentation may override the visible arrangement until the search is cleared.
+- **Stored state is per-project editor configuration.** Latch preferences are not serialized into Actor/level packages and need not be shared among team members.
+- **The actual scene hierarchy is unchanged.** Latch does not rename, reorder, move, transform, attach, detach or reparent Actors, change Folder membership, or replace the native World Outliner.
 
-It does **not**:
+For details, see [Troubleshooting and FAQ](https://mippi-the-dork.github.io/Latch/?page=05-implementation-and-support%2Ftroubleshooting%2FDESIGN.md) and [Identity and Parent Lifecycle](https://mippi-the-dork.github.io/Latch/?page=04-settings-and-persistence%2Fidentity%2FDESIGN.md).
 
-- Move, rotate, scale, rename, or reparent Actors.
-- Change Folder membership, attachment relationships, or the actual Actor hierarchy.
-- Change scene visibility, Hidden in Game, or runtime rendering.
-- Modify Actor ordering, add gameplay components, or affect packaged-game behavior.
-- Store its expansion/pin choices in Actor or level packages.
-- Replace Unreal's native World Outliner with a separate tree.
+## What's next?
 
-### Limitations worth knowing
+Latch v2.0.3 already provides the core expansion latch, Mixed View, Keep Visible, search-aware and persistence workflows. Future review areas include Unreal Editor compatibility, hierarchy usability, performance in very large Outliners, and additional testing.
 
-**Editor-only.** Latch works with the editor's World Outliner; it does not provide a runtime UI or persistent state for PIE/runtime-spawned Actors.
+**No new release scope or dates are committed.** These are directions for evaluating Latch's future, not features included in the current version.
 
-**Expansion Latches need children.** A row without real children can't hold an active expansion latch. If an existing parent loses its final child, its latch may be cleared; don't assume the old red state will return if new children are added.
+[**View the Latch Roadmap →**](https://mippi-the-dork.github.io/Latch/?page=ROADMAP.md)
 
-**Keep Visible needs a collapsed ancestor to reveal.** A root-level item can be pinned, but there is no ancestor path to expose until it belongs beneath another Actor or Folder.
+## Issues, feature requests and contributions
 
-**Search temporarily owns presentation.** Unreal may change the displayed hierarchy during an Outliner search. Latch restores logical expansion and required Mixed View paths when the search is cleared.
+Found a bug? Please [open an issue](https://github.com/mippi-the-dork/Latch/issues) with your Latch/Unreal versions, installation method, Actor or Folder type, current red/yellow/white state, selection and search conditions, reproduction steps, and screenshots or an Unreal Output Log excerpt where helpful.
 
-**State is per-project editor data.** Latch arrangements aren't shared scene content, and other users may see a different Outliner layout.
+Have an idea? [Submit a feature request](https://github.com/mippi-the-dork/Latch/issues) describing the hierarchy workflow problem and what you'd like to accomplish, rather than only a specific implementation.
 
-For specific behaviors and edge cases, use the [full limitations and troubleshooting guidance](https://mippi-the-dork.github.io/Latch/?page=05-implementation-and-support%2Ftroubleshooting%2FDESIGN.md).
-
-## Reporting bugs
-
-Found an issue? **[Open a GitHub Issue](https://github.com/mippi-the-dork/Latch/issues/new)**.
-
-Please include the Latch and Unreal Engine versions, your installation method (Fab, release or source), whether the item was an Actor or Folder, the relevant red/yellow/white state, whether search was active, steps to reproduce, and a screenshot or short video where possible. Include relevant Unreal Editor logs when available.
-
-Clear reproduction steps make it much easier to distinguish a Latch problem from native Outliner behavior.
-
-## Feature requests
-
-**[Suggest a feature](https://github.com/mippi-the-dork/Latch/issues/new)** through GitHub Issues.
-
-Describe the **hierarchy workflow problem** you want solved, ideally with an example of what makes the current Outliner difficult to use. This helps keep new features focused on Latch's purpose rather than expanding into unrelated scene-management tools.
-
-## Contributions
-
-Pull requests are welcome. For substantial changes, please **[open an Issue first](https://github.com/mippi-the-dork/Latch/issues)** to discuss the problem and intended direction.
-
-Latch is deliberately focused on helping you control the native World Outliner hierarchy. Contributions should preserve that focus and its existing editor-first behavior.
+**Pull requests are welcome.** For major changes, open an issue first to discuss the intended scope and design. Latch aims to remain compact, predictable and native to Unreal's World Outliner.
 
 ## License
 
-Latch is released under the **MIT License**. See [LICENSE](LICENSE) for the full terms.
+Latch is distributed under the **MIT License**. See [LICENSE](LICENSE) for the full terms.
 
 ---
 
-**Created by [Mippi the Dork](https://github.com/mippi-the-dork)**
+**Latch is created by Mippi the Dork.**
 
-*A collapsed hierarchy shouldn't have to become an expanded mess just because one important thing inside it still needs to remain visible.*
-
-**[Read the Documentation](https://mippi-the-dork.github.io/Latch/)** · **[Fab](https://www.fab.com/listings/280bc637-782a-45a3-a949-9423e745bf34)** · **[Releases](https://github.com/mippi-the-dork/Latch/releases)** · **[Report an Issue](https://github.com/mippi-the-dork/Latch/issues)**
+**[Explore the Documentation](https://mippi-the-dork.github.io/Latch/)** · **[Get Latch](https://github.com/mippi-the-dork/Latch/releases)** · **[Report an Issue](https://github.com/mippi-the-dork/Latch/issues)**
