@@ -82,7 +82,7 @@ World Outliner search temporarily takes control of what is shown. Clear the sear
 
 Need ordinary Unreal expansion for a while? **Suspend Latch** without discarding your stored red latches and white pins, then resume when you're ready.
 
-[**Search behavior](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsearch%2FDESIGN.md)** · **[Suspend and Resume](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsuspend%2FDESIGN.md)**
+**[Search behavior](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsearch%2FDESIGN.md)** · **[Suspend and Resume](https://mippi-the-dork.github.io/Latch/?page=03-interactions-and-workflows%2Fsuspend%2FDESIGN.md)**
 
 ### Keep your workspace yours
 
