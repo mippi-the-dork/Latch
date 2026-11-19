@@ -1,0 +1,202 @@
+[
+  {
+    "id": "viewport-menu",
+    "kind": "image",
+    "page": "03-interactions-and-workflows/viewport-menu/DESIGN.md",
+    "heading": "Use Latch without returning to the Outliner",
+    "alt": "Latch commands in the viewport's context menu",
+    "caption": "Selected Actors can access Latch presentation controls directly from the Level Editor viewport.",
+    "capture_instructions": "Capture a selected Actor in the Level Editor viewport with the native right-click menu open to its Latch submenu. Include the selected Actor's Outliner row in the editor layout if possible, but do not imply folders are viewport-selected.",
+    "final_asset": "assets/media/viewport-menu.png"
+  },
+  {
+    "id": "search-restore",
+    "kind": "gif",
+    "page": "03-interactions-and-workflows/search/DESIGN.md",
+    "heading": "What happens on clearing search?",
+    "alt": "Animation of World Outliner search temporarily changing hierarchy presentation and restoring Latch state",
+    "caption": "Search can reveal matching rows without permanently replacing the saved expansion and Keep Visible choices.",
+    "capture_instructions": "Record a red latched-closed folder and white pinned descendant, then type a search for an unrelated Actor, inspect results, and clear the search. Show the red and white state returning and the correct yellow paths recalculating.",
+    "final_asset": "assets/media/search-restore.gif"
+  },
+  {
+    "id": "search-snapshot",
+    "kind": "image",
+    "page": "03-interactions-and-workflows/search/TECHNICAL.md",
+    "heading": "Detection",
+    "alt": "Diagram of capturing logical expansion before Outliner search and restoring afterward",
+    "caption": "Latch preserves a pre-search logical expansion snapshot while Unreal controls the temporary search presentation.",
+    "capture_instructions": "Make a three-stage flowchart labeled Search Starts / Search Active / Search Clears. Show Runtime SearchLogicalExpansion, PresentInactive and restoration plus Mixed View recalculation; avoid depicting search as modifying persisted red/white state.",
+    "final_asset": "assets/media/search-snapshot.png"
+  },
+  {
+    "id": "suspend-toggle",
+    "kind": "gif",
+    "page": "03-interactions-and-workflows/suspend/DESIGN.md",
+    "heading": "Temporary normal Unreal behavior",
+    "alt": "Animation of suspending Latch and resuming stored expansion presentation",
+    "caption": "Suspending Latch temporarily returns the Outliner to native behavior while retaining recorded latches and pins.",
+    "capture_instructions": "Record an Outliner with red latches and a yellow Mixed ancestor, invoke Suspend Latch from the menu, demonstrate ordinary expansion, then invoke Resume Latch and show the stored red/white states and required yellow paths restored.",
+    "final_asset": "assets/media/suspend-toggle.gif"
+  },
+  {
+    "id": "suspend-state",
+    "kind": "image",
+    "page": "03-interactions-and-workflows/suspend/TECHNICAL.md",
+    "heading": "Stored flag",
+    "alt": "Diagram separating the suspended boolean from stored expansion and Keep Visible keys",
+    "caption": "Suspension changes reconciliation behavior without deleting previously saved item state.",
+    "capture_instructions": "Draw ULatchSubsystem with independent Expansion, KeepVisible and Suspended fields; show FRegistry choosing either the inactive/native presentation branch or normal latch reconciliation depending on Suspended.",
+    "final_asset": "assets/media/suspend-state.png"
+  },
+  {
+    "id": "settings-ownership",
+    "kind": "image",
+    "page": "04-settings-and-persistence/settings/TECHNICAL.md",
+    "heading": "Settings class",
+    "alt": "Diagram distinguishing Latch Project Settings from per-project editor state",
+    "caption": "Appearance preferences live in Latch configuration, while saved item latches and pins live in editor workspace configuration.",
+    "capture_instructions": "Diagram ULatchSettings reading Config/DefaultLatch.ini and ULatchSubsystem saving section Latch.State.V3 to GEditorPerProjectIni. Label spacing/color/hover/persist preference separately from per-item expansion, pin and Suspend state.",
+    "final_asset": "assets/media/settings-ownership.png"
+  },
+  {
+    "id": "persistence-workflow",
+    "kind": "gif",
+    "page": "04-settings-and-persistence/persistence/DESIGN.md",
+    "heading": "When persistence is disabled",
+    "alt": "Animation of disabling persistence, arranging a hierarchy and observing a clean restart",
+    "caption": "Latch can retain a temporary workspace arrangement for the active editor session without saving it for the next launch.",
+    "capture_instructions": "Record Project Settings with Persist State Across Editor Restarts unchecked, then set a red latch and white pin, close/reopen a disposable project and show those temporary states absent. Make clear that the level itself was not changed.",
+    "final_asset": "assets/media/persistence-workflow.gif"
+  },
+  {
+    "id": "persistence-config",
+    "kind": "image",
+    "page": "04-settings-and-persistence/persistence/TECHNICAL.md",
+    "heading": "Config storage",
+    "alt": "Diagram of Latch.State.V3 expansion, KeepVisible and Suspended records",
+    "caption": "Latch stores stable keyed expansion and pin information in per-project editor configuration rather than level packages.",
+    "capture_instructions": "Create a technical diagram showing Section Latch.State.V3 with Expansion array, KeepVisible array, and Suspended boolean written to GEditorPerProjectIni; distinguish it from .umap and external Actor .uasset packages.",
+    "final_asset": "assets/media/persistence-config.png"
+  },
+  {
+    "id": "identity-move",
+    "kind": "gif",
+    "page": "04-settings-and-persistence/identity/DESIGN.md",
+    "heading": "Keep Visible follows the item",
+    "alt": "Animation moving a pinned Actor between folders while retaining its pin",
+    "caption": "Keep Visible remains associated with the Actor's identity when it is moved or reparented in the Outliner.",
+    "capture_instructions": "Record a white-pinned Actor in Folder A, drag it to Folder B or attach it under another Actor, then collapse the new ancestor and show its white pin and required Mixed path still functioning. Include both before and after states.",
+    "final_asset": "assets/media/identity-move.gif"
+  },
+  {
+    "id": "identity-keys",
+    "kind": "image",
+    "page": "04-settings-and-persistence/identity/TECHNICAL.md",
+    "heading": "Identity implementation",
+    "alt": "Diagram of Actor GUID and Folder GUID/path identity keys",
+    "caption": "Latch associates editor presentation state with stable Actor or Folder identifiers when available.",
+    "capture_instructions": "Create an example of Actor|WorldPackage|GUID, FolderGuid|WorldPackage|GUID, and the fallback ActorPath/FolderPath key families. Show those keys mapping to expansion and pin state inside ULatchSubsystem.",
+    "final_asset": "assets/media/identity-keys.png"
+  },
+  {
+    "id": "clear-branch",
+    "kind": "gif",
+    "page": "04-settings-and-persistence/clearing/DESIGN.md",
+    "heading": "Clear only what you intend",
+    "alt": "Animation clearing Latch state from one branch while other branches retain their state",
+    "caption": "Branch clearing removes selected hierarchy presentation settings without deleting any Actors or Folders.",
+    "capture_instructions": "Record two folders with red latches and white pins, use Clear Latch State in Branch on one, and show the other folder's states remaining untouched. Avoid mixing this with native Unreal delete.",
+    "final_asset": "assets/media/clear-branch.gif"
+  },
+  {
+    "id": "clear-options",
+    "kind": "image",
+    "page": "04-settings-and-persistence/clearing/DESIGN.md",
+    "heading": "Project Settings utility",
+    "alt": "Latch Project Settings showing the Clear Saved Latch State utility",
+    "caption": "The saved-state utility resets persisted Latch workspace information without modifying the scene.",
+    "capture_instructions": "Capture Project Settings > Plugins > Latch with Clear Saved Latch State visible. If a confirmation dialog appears, show it alongside the utility and make its scope readable.",
+    "final_asset": "assets/media/clear-options.png"
+  },
+  {
+    "id": "architecture-user-flow",
+    "kind": "image",
+    "page": "05-implementation-and-support/architecture/DESIGN.md",
+    "heading": "Three responsibilities",
+    "alt": "Simple diagram explaining how Latch stores intent and updates World Outliner presentation",
+    "caption": "The subsystem stores workspace choices, the registry reconciles hierarchy state, and row widgets display the result.",
+    "capture_instructions": "Draw three labeled blocks: ULatchSubsystem Saved Intent → FRegistry Hierarchy Reconciliation → World Outliner Rows/Controls. Include a selection/pin event input and illustrate that the actual level hierarchy is unchanged.",
+    "final_asset": "assets/media/architecture-user-flow.png"
+  },
+  {
+    "id": "architecture-components",
+    "kind": "image",
+    "page": "05-implementation-and-support/architecture/TECHNICAL.md",
+    "heading": "Module startup and shutdown",
+    "alt": "Technical architecture diagram of Latch's editor integration components",
+    "caption": "Latch integrates the Editor module, subsystem, Scene Outliner columns, Slate input processor and menu extensions.",
+    "capture_instructions": "Create a source-class diagram naming FLatchModule, ULatchSubsystem, FRegistry, FObserverColumn, SKeepVisiblePin, FInputProcessor, UToolMenus and STreeView. Use distinct arrows for registration, keyed data reads, invalidation and row presentation.",
+    "final_asset": "assets/media/architecture-components.png"
+  },
+  {
+    "id": "performance-outliner",
+    "kind": "gif",
+    "page": "05-implementation-and-support/performance/DESIGN.md",
+    "heading": "A demanding workflow to test",
+    "alt": "Animation of Latch maintaining a large Outliner during scrolling, selection and search",
+    "caption": "Latch's event-driven hierarchy updates are designed to avoid continuous full-tree work during ordinary row interaction.",
+    "capture_instructions": "Record a realistically large UE Outliner with many nested folders: scroll, pin an item, select a viewport Actor, search and clear, then resume. Include an FPS/stat overlay only if measured honestly and don't invent a performance comparison.",
+    "final_asset": "assets/media/performance-outliner.gif"
+  },
+  {
+    "id": "performance-reconciliation",
+    "kind": "image",
+    "page": "05-implementation-and-support/performance/TECHNICAL.md",
+    "heading": "Event-driven scheduling",
+    "alt": "Diagram of event-driven invalidation and slower fallback reconciliation",
+    "caption": "Latch coalesces hierarchy updates triggered by editor events and retains a separate slow safety audit for otherwise unannounced changes.",
+    "capture_instructions": "Draw selection/Actor/hierarchy/row lifecycle events feeding FRegistry Invalidate and scheduled Tick/UpdateOutliner. Add the 3-second fallback audit as a distinct low-frequency safety path, not the normal response latency.",
+    "final_asset": "assets/media/performance-reconciliation.png"
+  },
+  {
+    "id": "troubleshooting-mixed",
+    "kind": "image",
+    "page": "05-implementation-and-support/troubleshooting/DESIGN.md",
+    "heading": "Why are ancestors yellow?",
+    "alt": "Comparison of a normal collapsed folder and a yellow Mixed View ancestor",
+    "caption": "A yellow ancestor is logically collapsed but temporarily exposes the necessary path to a selected or pinned descendant.",
+    "capture_instructions": "Capture two nearby nested folders in the Outliner: one ordinary grey collapsed, the other yellow showing only a pinned or selected child path. Include a visible white pin or selection highlight to explain the exposure requirement.",
+    "final_asset": "assets/media/troubleshooting-mixed.png"
+  },
+  {
+    "id": "troubleshooting-flow",
+    "kind": "image",
+    "page": "05-implementation-and-support/troubleshooting/TECHNICAL.md",
+    "heading": "Symptom-to-owner map",
+    "alt": "Diagnostic flowchart for Latch missing controls, state and refresh issues",
+    "caption": "Diagnosing Latch begins by identifying whether the issue involves UI registration, keyed persistence or live row reconciliation.",
+    "capture_instructions": "Create a branching diagram with symptom groups Column/Menu Missing → FLatchModule, State Lost → ULatchSubsystem, Yellow Path Wrong → FRegistry MixedItems, Input Gesture Wrong → FInputProcessor, Search Restore Wrong → SearchLogicalExpansion.",
+    "final_asset": "assets/media/troubleshooting-flow.png"
+  },
+  {
+    "id": "updating-folder",
+    "kind": "image",
+    "page": "05-implementation-and-support/updating/DESIGN.md",
+    "heading": "Updating a precompiled installation",
+    "alt": "Latch plugin directory in a project's Plugins folder after an update",
+    "caption": "Replacing the complete Latch folder avoids mixing source and binary files from incompatible releases.",
+    "capture_instructions": "Capture Windows File Explorer showing YourProject/Plugins/Latch with Latch.uplugin directly inside and Source/Resources/Config beneath it. Include a clear version reference for the downloaded release and exclude irrelevant project folders.",
+    "final_asset": "assets/media/updating-folder.png"
+  },
+  {
+    "id": "roadmap-current-future",
+    "kind": "image",
+    "page": "ROADMAP.md",
+    "heading": "Where Latch is today",
+    "alt": "Timeline separating Latch v2.0.3 features from uncommitted future research",
+    "caption": "The current release supports hierarchy latches, Mixed View, pins and editor persistence; future ideas have not been assigned a release.",
+    "capture_instructions": "Create a clean timeline showing Current: Latch v2.0.3 with expansion, Mixed View, Keep Visible and persistence. Show Future Review as explicitly uncommitted, containing compatibility, usability, performance and testing, without an invented v3.0 milestone.",
+    "final_asset": "assets/media/roadmap-current-future.png"
+  }
+]
