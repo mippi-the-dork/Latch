@@ -4,6 +4,13 @@
 
 ## Stored state
 
+<!-- Media target: IMAGE | expansion-state-model | docs/assets/media/expansion-state-model.png -->
+<figure class="doc-media" data-kind="image" data-media-id="expansion-state-model">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Unlatched, LatchedOpen and LatchedClosed subsystem values" loading="lazy">
+  <figcaption>Latch records expansion intent as one of three stored states rather than saving physical tree row visibility.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Draw the ELatchExpansionState enum as Unlatched, LatchedOpen and LatchedClosed, linked to a saved item key in ULatchSubsystem. Separate the saved state from current STreeView physical expansion.</span></figcaption>
+</figure>
+
+
 `ULatchSubsystem` exposes `ELatchExpansionState::{Unlatched,LatchedOpen,LatchedClosed}`; `ToggleCurrentExpansionLatch` records the row's current **logical** expansion. `SetExpansionState` writes the keyed state and triggers editor-configuration persistence when enabled.
 
 ## Eligibility

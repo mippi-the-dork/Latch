@@ -8,6 +8,13 @@ Latch v2.0.3 targets Unreal Engine **5.8.x** on **Windows 64-bit**, running in t
 
 ### Project installation
 
+<!-- Media target: IMAGE | install-directory | docs/assets/media/install-directory.png -->
+<figure class="doc-media" data-kind="image" data-media-id="install-directory">
+  <img src="../../assets/media-placeholder.png" alt="Latch plugin installed under an Unreal Engine project's Plugins directory" loading="lazy">
+  <figcaption>A project installation puts the Latch descriptor and plugin files inside the project's Plugins/Latch folder.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture Windows File Explorer at YourProject/Plugins/Latch, with the address bar and Latch.uplugin, Source, Resources and Config visible. Avoid showing a nested double-Latch folder or unrelated plugins.</span></figcaption>
+</figure>
+
+
 1. Close Unreal Editor.
 2. Put the entire **Latch** plugin folder under `YourProject/Plugins/Latch/`.
 3. Check that `Latch.uplugin` is directly inside that directory.

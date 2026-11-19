@@ -4,6 +4,13 @@
 
 ## The problem Latch solves
 
+<!-- Media target: IMAGE | overview-hierarchy | docs/assets/media/overview-hierarchy.png -->
+<figure class="doc-media" data-kind="image" data-media-id="overview-hierarchy">
+  <img src="../../assets/media-placeholder.png" alt="Latch World Outliner with red expansion latches, yellow Mixed View and a white Keep Visible pin" loading="lazy">
+  <figcaption>Latch combines persistent parent expansion choices with selective paths to important descendants.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the UE 5.8 World Outliner in a deep folder hierarchy. Show one red latched-open row, one red latched-closed row, a yellow Mixed ancestor and a white pinned Actor together; keep row labels and triangle/pin glyphs legible.</span></figcaption>
+</figure>
+
+
 In a large Unreal level, opening one Actor from the viewport or filtering the Outliner can disturb the carefully arranged tree you were using to work. Latch records your intended expansion state separately from temporary exposure and selection.
 
 **Red triangles** mean a parent is latched open or closed. **Yellow triangles** mean a parent is logically collapsed while Latch exposes the narrow path to a required descendant. **White pins** mark Actors or Folders that should remain reachable through collapsed ancestors.

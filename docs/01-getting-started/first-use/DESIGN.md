@@ -4,6 +4,13 @@
 
 ## Try Latch on a test hierarchy
 
+<!-- Media target: GIF | first-use | docs/assets/media/first-use.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="first-use">
+  <img src="../../assets/media-placeholder.png" alt="Animation of the first expansion latch, Keep Visible pin and resulting Mixed View" loading="lazy">
+  <figcaption>The first-use workflow moves from a normal expander to a red latch and then a pinned descendant exposed through a yellow parent.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a compact Unreal Editor sequence with one folder and children: expand, Alt-click to turn red, unlatch, pin a child using the white pin, collapse the ancestor and show its yellow Mixed triangle. Display mouse modifier labels unobtrusively.</span></figcaption>
+</figure>
+
+
 Create or open a disposable level containing a folder with a few Actors.
 
 1. **Expand** the folder normally using its grey triangle.

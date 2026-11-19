@@ -8,6 +8,13 @@
 
 ## Input dispatch
 
+<!-- Media target: IMAGE | first-use-gesture-routing | docs/assets/media/first-use-gesture-routing.png -->
+<figure class="doc-media" data-kind="image" data-media-id="first-use-gesture-routing">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of mouse gestures routed to Latch's input processor and registry" loading="lazy">
+  <figcaption>Normal, Alt and Shift expansion interactions take separate paths through Latch and the native Outliner.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Illustrate a flow from native Outliner expander hit testing through FInputProcessor to normal click, Alt-click ToggleLatch and Shift-click recursive expansion. Show pin clicks separately through SKeepVisiblePin and FRegistry.</span></figcaption>
+</figure>
+
+
 `FInputProcessor::HandleMouseButtonDownEvent` and the row/registry handling in `LatchInteraction.cpp` distinguish modifiers, clicked rows and the relevant live Outliner. The registry tests whether a row has live children before latching its expansion.
 
 ## Display derivation

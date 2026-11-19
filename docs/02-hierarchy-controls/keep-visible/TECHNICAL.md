@@ -8,6 +8,13 @@
 
 ## Data ownership
 
+<!-- Media target: IMAGE | keep-visible-identity | docs/assets/media/keep-visible-identity.png -->
+<figure class="doc-media" data-kind="image" data-media-id="keep-visible-identity">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of an item identity key persisting while its hierarchy position changes" loading="lazy">
+  <figcaption>A Keep Visible key belongs to an Actor or Folder identity, not the row's current screen position.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Diagram the same Actor GUID/world package identity moving from Folder A to Folder B while its KeepVisible key remains in ULatchSubsystem. Show the Outliner row being recreated without changing the pin's logical state.</span></figcaption>
+</figure>
+
+
 `ULatchSubsystem::IsExposureLatched` and `SetExposureLatched` maintain a set of stable item keys. `MakeItemKey` prefers Actor GUID + world package and Folder GUID where available, with name/path fallbacks. The current config key is `Latch.State.V3` → `KeepVisible`.
 
 ## Reconciliation

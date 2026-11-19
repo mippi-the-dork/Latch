@@ -4,6 +4,13 @@
 
 ## Module architecture
 
+<!-- Media target: IMAGE | overview-architecture | docs/assets/media/overview-architecture.png -->
+<figure class="doc-media" data-kind="image" data-media-id="overview-architecture">
+  <img src="../../assets/media-placeholder.png" alt="Diagram connecting the Latch editor module to subsystem, registry and row widgets" loading="lazy">
+  <figcaption>Latch separates saved presentation intent from live Outliner row interaction and reconciliation.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Draw a source-labeled diagram with FLatchModule registering the Scene Outliner label/observer columns and input processor, FRegistry reconciling UI state, and ULatchSubsystem holding per-project expansion/pin/suspend data.</span></figcaption>
+</figure>
+
+
 `Latch.uplugin` declares one **Editor** module loaded at `PostEngineInit`, restricted to **Win64** and targeting UE 5.8.0. `FLatchModule` registers Outliner integration; `Latch::FRegistry` reconciles live row widgets and selection, and `ULatchSubsystem` owns persisted expansion and Keep Visible state.
 
 ## Logical versus rendered state
